@@ -12,6 +12,7 @@ BOOTBLOB:jetson-agx-orin-devkit = "boot0_agx_orin_devkit.img.gz"
 # TODO: Update boot blobs for Jetson Xavier AGX, Forecr DSB and Orin NX in Xavier NX Devkit on L4T 35.2.1
 BOOTBLOB:jetson-xavier = "boot0_agx_devkit.img.gz"
 BOOTBLOB:forecr-dsb-nx2-xavier-nx-emmc = "boot0_forecr_dsb_nx2_xavier_nx.img.gz"
+BOOTBLOB:forecr-dsb-ornx-lan-orin-nx-emmc = "boot0_forecr_dsb_ornxlan_nx.img.gz"
 BOOTBLOB:jetson-orin-nx-xavier-nx-devkit = "boot0_orin_nx_xavier_nx_devkit.img.gz"
 BOOTBLOB:jetson-orin-nano-devkit-nvme = "boot0_orin_nano_devkit_nvme.img.gz"
 

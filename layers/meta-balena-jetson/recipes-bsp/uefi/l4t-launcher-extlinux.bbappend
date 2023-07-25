@@ -18,6 +18,7 @@ do_install:append:forecr-dsb-nx2-xavier-nx-emmc() {
     echo "custom_fdt_file=tegra194-p3668-dsboard-nx2-0000.dtb" >> ${DEPLOY_DIR_IMAGE}/extra_uEnv.txt
 }
 
+# todo: what for ornxlan?
 
 do_compile() {
     if [ -n "${UBOOT_EXTLINUX_FDT}" ]; then

@@ -53,7 +53,7 @@ do_install:append:forecr-dsb-nx2-xavier-nx-emmc() {
 	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra194-p3668-dsboard-nx2-0000.dtb ${D}/boot/tegra194-p3668-dsboard-nx2-0000.dtb
 	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra194-p3668-dsboard-nx2-0000-imx477.dtb ${D}/boot/tegra194-p3668-dsboard-nx2-0000-imx477.dtb
 	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra194-p3668-dsboard-nx2-0000-rev121.dtb ${D}/boot/tegra194-p3668-dsboard-nx2-0000-rev121.dtb
-        install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra194-p3668-dsboard-nx2-0000-rev121-imx477.dtb ${D}/boot/tegra194-p3668-dsboard-nx2-0000-rev121-imx477.dtb
+    install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra194-p3668-dsboard-nx2-0000-rev121-imx477.dtb ${D}/boot/tegra194-p3668-dsboard-nx2-0000-rev121-imx477.dtb
 }
 
 FILES:${PN}:forecr-dsb-nx2-xavier-nx-emmc += " \
@@ -62,6 +62,45 @@ FILES:${PN}:forecr-dsb-nx2-xavier-nx-emmc += " \
 	/boot/tegra194-p3668-dsboard-nx2-0000-imx477.dtb \
 	/boot/tegra194-p3668-dsboard-nx2-0000-rev121.dtb \
 	/boot/tegra194-p3668-dsboard-nx2-0000-rev121-imx477.dtb \
+"
+
+do_install:append:forecr-dsb-ornx-lan-orin-nx-emmc() {
+	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb
+	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dtb
+	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dtb
+    install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dtb
+    install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb
+	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-base.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dtb
+	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-imx477.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dtb
+    install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dtb
+    install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb
+	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-base.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dtb
+	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-imx477.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dtb
+    install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dtb
+    install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb
+	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-base.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dtb
+	install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-imx477.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dtb
+    install -m 0644 ${DEPLOY_DIR_IMAGE}/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan.dtb ${D}/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dtb
+}
+
+FILES:${PN}:forecr-dsb-ornx-lan-orin-nx-emmc += " \
+    /boot/tegra234-p3767-0000-p3509-a02.dtb \
+	/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb \
+	/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dtb \
+	/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dtb \
+	/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dtb \
+	/boot/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb \
+	/boot/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-base.dtb \
+	/boot/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-imx477.dtb \
+	/boot/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan.dtb \
+	/boot/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb \
+	/boot/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-base.dtb \
+	/boot/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-imx477.dtb \
+	/boot/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan.dtb \
+	/boot/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb \
+	/boot/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-base.dtb \
+	/boot/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-imx477.dtb \
+	/boot/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan.dtb
 "
 
 do_install:jetson-orin-nano-devkit-nvme() {

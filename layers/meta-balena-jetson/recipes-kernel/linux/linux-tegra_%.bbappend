@@ -9,6 +9,7 @@ SRC_URI:append = " file://0001-fix-kernel-headers-test.patch \
 		file://0001-defconfig-Fix-build-failure.patch \
 "
 SRC_URI:append:forecr-dsb-nx2-xavier-nx-emmc = " file://0001-Port-Forecr-DSBOARD-NX2-patches.patch "
+SRC_URI:append:forecr-dsb-ornx-lan-orin-nx-emmc = " file://0001-Port-Forecr-DSBOARD-ORNXLAN-patches.patch "
 
 BALENA_CONFIGS:remove = " mdraid"
 
@@ -72,6 +73,7 @@ BALENA_CONFIGS[nfsfs] = " \
 "
 
 BALENA_CONFIGS:append:forecr-dsb-nx2-xavier-nx-emmc = " pcf8574 lan743x xr17v35x usbserial"
+BALENA_CONFIGS:append:forecr-dsb-ornx-lan-orin-nx-emmc = " pcf8574 lan743x xr17v35x usbserial"
 BALENA_CONFIGS[pcf8574] = " \
     CONFIG_GPIO_PCF857X=m \
 "
