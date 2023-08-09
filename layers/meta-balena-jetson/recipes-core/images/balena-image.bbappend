@@ -120,7 +120,8 @@ device_specific_configuration:jetson-xavier() {
       part_size=$(echo $n | cut -d ':' -f 3)
       file_path=$(find ${DEPLOY_DIR_IMAGE}/bootfiles -name $file_name)
       END=$(expr ${START} \+ ${part_size} \- 1)
-      echo "Will write $part_name from ${START} to ${END} part size: $part_size"
+      echo "Will write $part_name from ${START} to ${END} part size: $part_size (${file_name}, ${file_path}, ${DEPLOY_DIR_IMAGE}/bootfiles, ${n})"
+      ls -l ${DEPLOY_DIR_IMAGE}/bootfiles
       parted -s ${BALENA_RAW_IMG} unit B mkpart $part_name ${START} ${END}
       # The padding partition exists to allow for the device specific space to
       # be a multiple of 4096. We don't write anything to it for the moment.

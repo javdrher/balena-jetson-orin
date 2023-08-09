@@ -20,8 +20,8 @@ PARTSPEC:jetson-xavier = "partition_specification194.txt"
 PARTSPEC:jetson-xavier-nx-devkit-emmc = "partition_specification194_nxde.txt"
 PARTSPEC:jetson-xavier-nx-devkit = "partition_specification194_nxde_sdcard.txt"
 PARTSPEC:jetson-agx-orin-devkit = "partition_specification234.txt"
-PARTSPEC:jetson-orin-nx-xavier-nx-devkit = "partition_specification234.txt"
 PARTSPEC:jetson-orin-nano-devkit-nvme = "partition_specification234_orin_nano.txt"
+PARTSPEC:forecr-dsb-ornx-lan-orin-nx-emmc = "partition_specification234.txt"
 
 BINARY_INSTALL_PATH = "/opt/tegra-binaries/"
 
