@@ -1,0 +1,4702 @@
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/Makefile b/nvidia/platform/t23x/p3768/kernel-dts/Makefile
+index f306119fe..3197c890d 100644
+--- a/nvidia/platform/t23x/p3768/kernel-dts/Makefile
++++ b/nvidia/platform/t23x/p3768/kernel-dts/Makefile
+@@ -40,6 +40,10 @@ dtbo-$(BUILD_ENABLE) += tegra234-p3767-camera-p3768-imx219-dual.dtbo
+ dtbo-$(BUILD_ENABLE) += tegra234-p3767-camera-p3768-imx477-dual.dtbo
+ dtbo-$(BUILD_ENABLE) += tegra234-p3767-camera-p3768-imx477-dual-4lane.dtbo
+ dtbo-$(BUILD_ENABLE) += tegra234-p3767-overlay.dtbo
++dtb-$(BUILD_ENABLE) += tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dtb
++dtb-$(BUILD_ENABLE) += tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dtb
++dtb-$(BUILD_ENABLE) += tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dtb
++dtb-$(BUILD_ENABLE) += tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb
+
+ ifneq ($(dtb-y),)
+ dtb-y := $(addprefix $(makefile-path)/,$(dtb-y))
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dts
+new file mode 100644
+index 000000000..a41ab4507
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dts
+@@ -0,0 +1,111 @@
++/*
++ * Top level DTS file for CVM:P3767-0000 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++#include "tegra234-dcb-p3767-0000-hdmi.dtsi"
++#include <tegra234-soc/mods-simple-bus.dtsi>
++#include <t234-common-cvm/tegra234-thermal.dtsi>
++#include <t234-common-cvm/tegra234-cpuidle.dtsi>
++#include <t234-common-cvm/tegra234-thermal-cooling.dtsi>
++#include <t234-common-cvm/tegra234-thermal-userspace-alert.dtsi>
++#include "cvm/tegra234-p3767-0000.dtsi"
++#include "cvb/tegra234-p3768-0000-a0-ornx.dtsi"
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0000", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin NX 16GB for DSBOARD-ORNXLAN";
++
++	fixed-regulators {
++		regulator@102 { //p3768_vdd_1v8
++			//vin-supply = <&p3768_vdd_3v3_sys>;
++			/delete-property/ vin-supply;
++		};
++	};
++
++	pcie@141e0000 { /* C7x1 node */
++		status = "okay";
++		num-lanes = <1>;
++		phys = <&p2u_gbe_0>;
++		phy-names = "p2u-0";
++	};
++
++	pcie@140c0000 { /* C9x1 node */
++		status = "okay";
++		num-lanes = <1>;
++		phys = <&p2u_gbe_1>;
++		phy-names = "p2u-0";
++	};
++
++	i2c@3160000 {
++		tmp102: tmp102@49 { // Temperature Sensor
++			compatible = "ti,tmp102";
++			reg = <0x49>;
++			#thermal-sensor-cells = <0>;
++		};
++	};
++
++	xusb_padctl: xusb_padctl@3520000 {
++		ports {
++			usb3-0 {
++				nvidia,usb2-companion = <1>;
++				status = "okay";
++			};
++			usb3-1 {
++				//nvidia,usb2-companion = <0>;
++				nvidia,usb2-companion = <2>;
++				status = "okay";
++			};
++			usb3-2 {
++				nvidia,usb2-companion = <2>; 
++				status = "okay";
++			};
++		};
++	};
++
++	xudc@3550000 {
++		/delete-property/ charger-detector;
++	};
++
++	/delete-node/ usb_cd;
++
++	spi@3210000{ // SPI0 with CS0 on expansion connector
++		status = "okay";
++		nvidia,clock-always-on;
++		spi@0 {
++			status = "okay";
++			compatible = "spidev";
++			reg = <0x0>;
++			spi-max-frequency = <20000000>;
++			nvidia,enable-hw-based-cs;
++			nvidia,enable-hw-based-cs;
++			nvidia,cs-setup-clk-count = <0x1e>;
++			nvidia,cs-hold-clk-count = <0x1e>;
++			nvidia,rx-clk-tap-delay = <0x1f>;
++			nvidia,tx-clk-tap-delay = <0x0>;
++		};
++	};
++
++
++	serial@3100000 { // UART1 (uarta) RS422
++		status = "okay";
++	};
++
++	serial@3110000 { // UART0 (uartb) RS232
++		status = "okay";
++	};
++
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts
+new file mode 100644
+index 000000000..cb6ce4a24
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts
+@@ -0,0 +1,111 @@
++/*
++ * Top level DTS file for CVM:P3767-0000 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++#include "tegra234-dcb-p3767-0000-hdmi.dtsi"
++#include <tegra234-soc/mods-simple-bus.dtsi>
++#include <t234-common-cvm/tegra234-thermal.dtsi>
++#include <t234-common-cvm/tegra234-cpuidle.dtsi>
++#include <t234-common-cvm/tegra234-thermal-cooling.dtsi>
++#include <t234-common-cvm/tegra234-thermal-userspace-alert.dtsi>
++#include "cvm/tegra234-p3767-0000.dtsi"
++#include "cvb/tegra234-p3768-0000-a0-ornx-imx477.dtsi"
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0000", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin NX 16GB for DSBOARD-ORNXLAN";
++
++	fixed-regulators {
++		regulator@102 { //p3768_vdd_1v8
++			//vin-supply = <&p3768_vdd_3v3_sys>;
++			/delete-property/ vin-supply;
++		};
++	};
++
++	pcie@141e0000 { /* C7x1 node */
++		status = "okay";
++		num-lanes = <1>;
++		phys = <&p2u_gbe_0>;
++		phy-names = "p2u-0";
++	};
++
++	pcie@140c0000 { /* C9x1 node */
++		status = "okay";
++		num-lanes = <1>;
++		phys = <&p2u_gbe_1>;
++		phy-names = "p2u-0";
++	};
++
++	i2c@3160000 {
++		tmp102: tmp102@49 { // Temperature Sensor
++			compatible = "ti,tmp102";
++			reg = <0x49>;
++			#thermal-sensor-cells = <0>;
++		};
++	};
++
++	xusb_padctl: xusb_padctl@3520000 {
++		ports {
++			usb3-0 {
++				nvidia,usb2-companion = <1>;
++				status = "okay";
++			};
++			usb3-1 {
++				//nvidia,usb2-companion = <0>;
++				nvidia,usb2-companion = <2>;
++				status = "okay";
++			};
++			usb3-2 {
++				nvidia,usb2-companion = <2>; 
++				status = "okay";
++			};
++		};
++	};
++
++	xudc@3550000 {
++		/delete-property/ charger-detector;
++	};
++
++	/delete-node/ usb_cd;
++
++	spi@3210000{ // SPI0 with CS0 on expansion connector
++		status = "okay";
++		nvidia,clock-always-on;
++		spi@0 {
++			status = "okay";
++			compatible = "spidev";
++			reg = <0x0>;
++			spi-max-frequency = <20000000>;
++			nvidia,enable-hw-based-cs;
++			nvidia,enable-hw-based-cs;
++			nvidia,cs-setup-clk-count = <0x1e>;
++			nvidia,cs-hold-clk-count = <0x1e>;
++			nvidia,rx-clk-tap-delay = <0x1f>;
++			nvidia,tx-clk-tap-delay = <0x0>;
++		};
++	};
++
++
++	serial@3100000 { // UART1 (uarta) RS422
++		status = "okay";
++	};
++
++	serial@3110000 { // UART0 (uartb) RS232
++		status = "okay";
++	};
++
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dts
+new file mode 100644
+index 000000000..1fe702483
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dts
+@@ -0,0 +1,115 @@
++/*
++ * Top level DTS file for CVM:P3767-0000 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++#include "tegra234-dcb-p3767-0000-hdmi.dtsi"
++#include <tegra234-soc/mods-simple-bus.dtsi>
++#include <t234-common-cvm/tegra234-thermal.dtsi>
++#include <t234-common-cvm/tegra234-cpuidle.dtsi>
++#include <t234-common-cvm/tegra234-thermal-cooling.dtsi>
++#include <t234-common-cvm/tegra234-thermal-userspace-alert.dtsi>
++#include "cvm/tegra234-p3767-0000.dtsi"
++#include "cvb/tegra234-p3768-0000-a0-ornx.dtsi"
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0000", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin NX 16GB for DSBOARD-ORNXLAN";
++
++	fixed-regulators {
++		regulator@102 { //p3768_vdd_1v8
++			//vin-supply = <&p3768_vdd_3v3_sys>;
++			/delete-property/ vin-supply;
++		};
++	};
++
++	pcie@141e0000 { /* C7x1 node */
++		status = "okay";
++		num-lanes = <1>;
++		phys = <&p2u_gbe_0>;
++		phy-names = "p2u-0";
++	};
++
++	pcie@140c0000 { /* C9x1 node */
++		status = "okay";
++		num-lanes = <1>;
++		phys = <&p2u_gbe_1>;
++		phy-names = "p2u-0";
++	};
++
++	i2c@3160000 {
++		tmp102: tmp102@49 { // Temperature Sensor
++			compatible = "ti,tmp102";
++			reg = <0x49>;
++			#thermal-sensor-cells = <0>;
++		};
++	};
++
++	xusb_padctl: xusb_padctl@3520000 {
++		ports {
++			usb2-0 {/* Goes to recovery port */
++				mode = "host";
++				/delete-property/ usb-role-switch;
++				/delete-node/ connector;
++			};
++			usb3-0 {
++				nvidia,usb2-companion = <1>;
++				status = "okay";
++			};
++			usb3-1 {
++				nvidia,usb2-companion = <0>;
++				status = "okay";
++			};
++			usb3-2 {
++				nvidia,usb2-companion = <2>; 
++				status = "okay";
++			};
++		};
++	};
++
++	xudc@3550000 {
++		/delete-property/ charger-detector;
++	};
++
++	/delete-node/ usb_cd;
++
++	spi@3210000{ // SPI0 with CS0 on expansion connector
++		status = "okay";
++		nvidia,clock-always-on;
++		spi@0 {
++			status = "okay";
++			compatible = "spidev";
++			reg = <0x0>;
++			spi-max-frequency = <20000000>;
++			nvidia,enable-hw-based-cs;
++			nvidia,enable-hw-based-cs;
++			nvidia,cs-setup-clk-count = <0x1e>;
++			nvidia,cs-hold-clk-count = <0x1e>;
++			nvidia,rx-clk-tap-delay = <0x1f>;
++			nvidia,tx-clk-tap-delay = <0x0>;
++		};
++	};
++
++
++	serial@3100000 { // UART1 (uarta) RS422
++		status = "okay";
++	};
++
++	serial@3110000 { // UART0 (uartb) RS232
++		status = "okay";
++	};
++
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dts
+new file mode 100644
+index 000000000..479810e74
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dts
+@@ -0,0 +1,115 @@
++/*
++ * Top level DTS file for CVM:P3767-0000 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++#include "tegra234-dcb-p3767-0000-hdmi.dtsi"
++#include <tegra234-soc/mods-simple-bus.dtsi>
++#include <t234-common-cvm/tegra234-thermal.dtsi>
++#include <t234-common-cvm/tegra234-cpuidle.dtsi>
++#include <t234-common-cvm/tegra234-thermal-cooling.dtsi>
++#include <t234-common-cvm/tegra234-thermal-userspace-alert.dtsi>
++#include "cvm/tegra234-p3767-0000.dtsi"
++#include "cvb/tegra234-p3768-0000-a0-ornx-imx477.dtsi"
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0000", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin NX 16GB for DSBOARD-ORNXLAN";
++
++	fixed-regulators {
++		regulator@102 { //p3768_vdd_1v8
++			//vin-supply = <&p3768_vdd_3v3_sys>;
++			/delete-property/ vin-supply;
++		};
++	};
++
++	pcie@141e0000 { /* C7x1 node */
++		status = "okay";
++		num-lanes = <1>;
++		phys = <&p2u_gbe_0>;
++		phy-names = "p2u-0";
++	};
++
++	pcie@140c0000 { /* C9x1 node */
++		status = "okay";
++		num-lanes = <1>;
++		phys = <&p2u_gbe_1>;
++		phy-names = "p2u-0";
++	};
++
++	i2c@3160000 {
++		tmp102: tmp102@49 { // Temperature Sensor
++			compatible = "ti,tmp102";
++			reg = <0x49>;
++			#thermal-sensor-cells = <0>;
++		};
++	};
++
++	xusb_padctl: xusb_padctl@3520000 {
++		ports {
++			usb2-0 {/* Goes to recovery port */
++				mode = "host";
++				/delete-property/ usb-role-switch;
++				/delete-node/ connector;
++			};
++			usb3-0 {
++				nvidia,usb2-companion = <1>;
++				status = "okay";
++			};
++			usb3-1 {
++				nvidia,usb2-companion = <0>;
++				status = "okay";
++			};
++			usb3-2 {
++				nvidia,usb2-companion = <2>; 
++				status = "okay";
++			};
++		};
++	};
++
++	xudc@3550000 {
++		/delete-property/ charger-detector;
++	};
++
++	/delete-node/ usb_cd;
++
++	spi@3210000{ // SPI0 with CS0 on expansion connector
++		status = "okay";
++		nvidia,clock-always-on;
++		spi@0 {
++			status = "okay";
++			compatible = "spidev";
++			reg = <0x0>;
++			spi-max-frequency = <20000000>;
++			nvidia,enable-hw-based-cs;
++			nvidia,enable-hw-based-cs;
++			nvidia,cs-setup-clk-count = <0x1e>;
++			nvidia,cs-hold-clk-count = <0x1e>;
++			nvidia,rx-clk-tap-delay = <0x1f>;
++			nvidia,tx-clk-tap-delay = <0x0>;
++		};
++	};
++
++
++	serial@3100000 { // UART1 (uarta) RS422
++		status = "okay";
++	};
++
++	serial@3110000 { // UART0 (uartb) RS232
++		status = "okay";
++	};
++
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-base.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-base.dts
+new file mode 100644
+index 000000000..fb548d747
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-base.dts
+@@ -0,0 +1,26 @@
++/*
++ * Top level DTS file for CVM:P3767-0001 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0001", "nvidia,p3767-0001", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin NX 8GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts
+new file mode 100644
+index 000000000..4f7b6fd3f
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts
+@@ -0,0 +1,26 @@
++/*
++ * Top level DTS file for CVM:P3767-0001 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0001", "nvidia,p3767-0001", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin NX 8GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan.dts
+new file mode 100644
+index 000000000..182dae823
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan.dts
+@@ -0,0 +1,26 @@
++/*
++ * Top level DTS file for CVM:P3767-0001 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0001", "nvidia,p3767-0001", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin NX 8GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-imx477.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-imx477.dts
+new file mode 100644
+index 000000000..70db60357
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0001-p3768-0000-a0-dsboard-ornxlan-imx477.dts
+@@ -0,0 +1,26 @@
++/*
++ * Top level DTS file for CVM:P3767-0001 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0001", "nvidia,p3767-0001", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin NX 8GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-base.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-base.dts
+new file mode 100644
+index 000000000..d89e25033
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-base.dts
+@@ -0,0 +1,29 @@
++/*
++ * Top level DTS file for CVM:P3767-0003/P3767-0005 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++#include <t234-common-cvm/tegra234-p3767-pcie-max-speed-gen3.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0003", "nvidia,p3768-0000+p3767-0005",
++			"nvidia,p3767-0003", "nvidia,p3767-0005",
++			"nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin Nano 8GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts
+new file mode 100644
+index 000000000..53b7deb14
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts
+@@ -0,0 +1,29 @@
++/*
++ * Top level DTS file for CVM:P3767-0003/P3767-0005 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++#include <t234-common-cvm/tegra234-p3767-pcie-max-speed-gen3.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0003", "nvidia,p3768-0000+p3767-0005",
++			"nvidia,p3767-0003", "nvidia,p3767-0005",
++			"nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin Nano 8GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan.dts
+new file mode 100644
+index 000000000..e8d857551
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan.dts
+@@ -0,0 +1,29 @@
++/*
++ * Top level DTS file for CVM:P3767-0003/P3767-0005 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++#include <t234-common-cvm/tegra234-p3767-pcie-max-speed-gen3.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0003", "nvidia,p3768-0000+p3767-0005",
++			"nvidia,p3767-0003", "nvidia,p3767-0005",
++			"nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin Nano 8GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-imx477.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-imx477.dts
+new file mode 100644
+index 000000000..6778d14ad
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0003-p3768-0000-a0-dsboard-ornxlan-imx477.dts
+@@ -0,0 +1,29 @@
++/*
++ * Top level DTS file for CVM:P3767-0003/P3767-0005 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++#include <t234-common-cvm/tegra234-p3767-pcie-max-speed-gen3.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0003", "nvidia,p3768-0000+p3767-0005",
++			"nvidia,p3767-0003", "nvidia,p3767-0005",
++			"nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin Nano 8GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-base.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-base.dts
+new file mode 100644
+index 000000000..936fb5e64
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-base.dts
+@@ -0,0 +1,27 @@
++/*
++ * Top level DTS file for CVM:P3767-0004 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++#include <t234-common-cvm/tegra234-p3767-pcie-max-speed-gen3.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0004", "nvidia,p3767-0004", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin Nano 4GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts
+new file mode 100644
+index 000000000..b5830d630
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts
+@@ -0,0 +1,27 @@
++/*
++ * Top level DTS file for CVM:P3767-0004 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++#include <t234-common-cvm/tegra234-p3767-pcie-max-speed-gen3.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0004", "nvidia,p3767-0004", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin Nano 4GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan.dts
+new file mode 100644
+index 000000000..68f8811e7
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan.dts
+@@ -0,0 +1,27 @@
++/*
++ * Top level DTS file for CVM:P3767-0004 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++#include <t234-common-cvm/tegra234-p3767-pcie-max-speed-gen3.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0004", "nvidia,p3767-0004", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin Nano 4GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-imx477.dts b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-imx477.dts
+new file mode 100644
+index 000000000..5f476c065
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/tegra234-p3767-0004-p3768-0000-a0-dsboard-ornxlan-imx477.dts
+@@ -0,0 +1,27 @@
++/*
++ * Top level DTS file for CVM:P3767-0004 and CVB:DSBOARD-ORNXLAN.
++ *
++ * Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++/dts-v1/;
++
++#include "tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dts"
++#include <t234-common-cvm/tegra234-cpufreq-pair-cooling.dtsi>
++#include <t234-common-cvm/tegra234-p3767-pcie-max-speed-gen3.dtsi>
++
++/ {
++	nvidia,dtsfilename = __FILE__;
++	nvidia,dtbbuildtime = __DATE__, __TIME__;
++	compatible = "nvidia,p3768-0000+p3767-0004", "nvidia,p3767-0004", "nvidia,tegra234", "nvidia,tegra23x";
++	model = "Orin Nano 4GB for DSBOARD-ORNXLAN";
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-0000-a0-ornx-imx477.dtsi b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-0000-a0-ornx-imx477.dtsi
+new file mode 100644
+index 000000000..701243246
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-0000-a0-ornx-imx477.dtsi
+@@ -0,0 +1,252 @@
++/*
++ * Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++#include <dt-bindings/gpio/tegra234-gpio.h>
++#include "dt-bindings/input/input.h"
++#include "tegra234-p3768-0000-a0-pwm-fan.dtsi"
++#include "tegra234-p3768-0000-a0-pcie.dtsi"
++#include "tegra234-p3768-0000-a0-fixed-regulator.dtsi"
++#include "tegra234-p3768-audio.dtsi"
++//#include "tegra234-p3768-camera-rbpcv2-imx219.dtsi"
++//#include "tegra234-p3768-camera-rbpcv3-imx477.dtsi"
++#include "tegra234-p3768-camera-dsboard-ornx-imx477.dtsi"
++
++/ {
++	gpio-keys {
++		compatible = "gpio-keys";
++		gpio-keys,name = "gpio-keys";
++		status = "okay";
++
++		forcerecovery {
++			label = "force-recovery";
++			gpios = <&tegra_main_gpio TEGRA234_MAIN_GPIO(G, 0) GPIO_ACTIVE_LOW>;
++			linux,code = <BTN_1>;
++		};
++
++		power_key {
++			label = "power-key";
++			gpios = <&tegra_aon_gpio TEGRA234_AON_GPIO(EE, 4) GPIO_ACTIVE_LOW>;
++			linux,code = <KEY_POWER>;
++			gpio-key,wakeup;
++		};
++	};
++
++	eeprom-manager {
++		data-size = <0x100>;
++		bus@0 {
++			i2c-bus = <&gen1_i2c>;
++			eeprom@1 {
++				slave-address = <0x57>;
++				label = "cvb";
++			};
++		};
++
++		bus@1 {
++			i2c-bus = <&gen2_i2c>;
++			eeprom@1 {
++				slave-address = <0x50>;
++				label = "super-module";
++			};
++		};
++	};
++
++	xusb_padctl: xusb_padctl@3520000 {
++		status = "okay";
++		pads {
++			usb2 {
++				lanes {
++					usb2-0 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++					usb2-1 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++					usb2-2 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++				};
++			};
++			usb3 {
++				lanes {
++					usb3-0 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++					usb3-1 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++					usb3-2 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++				};
++			};
++		};
++
++		ports {
++			usb2-0 {/* Goes to recovery port */
++				mode = "otg";
++				status = "okay";
++				usb-role-switch;
++				connector {
++					compatible = "usb-b-connector", "gpio-usb-b-connector";
++ 					label = "micro-USB";
++ 					data-role = "micro";
++ 					vbus-gpio = <&tegra_main_gpio TEGRA234_MAIN_GPIO(Z, 1) GPIO_ACTIVE_LOW>;
++ 				};
++			};
++			usb2-1 {/* Goes to hub */
++				mode = "host";
++				status = "okay";
++			};
++			usb2-2 {/* Goes to M2.E */
++				mode = "host";
++				status = "okay";
++			};
++			usb3-0 {/* Goes to hub */
++				nvidia,usb2-companion = <1>;
++				status = "okay";
++			};
++			usb3-1 {
++				nvidia,usb2-companion = <2>;
++				status = "okay";
++			};
++			usb3-2 {
++				//nvidia,usb2-companion = <0>;
++				nvidia,usb2-companion = <2>; 
++				status = "okay";
++			};
++		};
++	};
++
++	tegra_xudc: xudc@3550000 {
++		status = "okay";
++		phys = <&{/xusb_padctl@3520000/pads/usb2/lanes/usb2-0}>;
++		phy-names = "usb2-0";
++		nvidia,xusb-padctl = <&xusb_padctl>;
++	};
++
++	tegra_xhci: xhci@3610000 {
++		status = "okay";
++		phys = <&{/xusb_padctl@3520000/pads/usb2/lanes/usb2-0}>,
++			<&{/xusb_padctl@3520000/pads/usb2/lanes/usb2-1}>,
++			<&{/xusb_padctl@3520000/pads/usb2/lanes/usb2-2}>,
++			<&{/xusb_padctl@3520000/pads/usb3/lanes/usb3-0}>,
++			<&{/xusb_padctl@3520000/pads/usb3/lanes/usb3-1}>,
++			<&{/xusb_padctl@3520000/pads/usb3/lanes/usb3-2}>;
++		phy-names = "usb2-0", "usb2-1", "usb2-2", "usb3-0", "usb3-1", "usb3-2";
++		nvidia,xusb-padctl = <&xusb_padctl>;
++	};
++
++	spi@3210000{ /* SPI1 in 40 pin conn */
++		status = "okay";
++		spi@0 { /* chip select 0 */
++			compatible = "tegra-spidev";
++			reg = <0x0>;
++			spi-max-frequency = <50000000>;
++			controller-data {
++				nvidia,enable-hw-based-cs;
++				nvidia,rx-clk-tap-delay = <0x10>;
++				nvidia,tx-clk-tap-delay = <0x0>;
++			};
++		};
++		spi@1 { /* chip select 1 */
++			compatible = "tegra-spidev";
++			reg = <0x1>;
++			spi-max-frequency = <50000000>;
++			controller-data {
++				nvidia,enable-hw-based-cs;
++				nvidia,rx-clk-tap-delay = <0x10>;
++				nvidia,tx-clk-tap-delay = <0x0>;
++			};
++		};
++	};
++
++	spi@3230000{ /* SPI3 in 40 pin conn */
++		status = "okay";
++		spi@0 { /* chip select 0 */
++			compatible = "tegra-spidev";
++			reg = <0x0>;
++			spi-max-frequency = <50000000>;
++			controller-data {
++				nvidia,enable-hw-based-cs;
++				nvidia,rx-clk-tap-delay = <0x10>;
++				nvidia,tx-clk-tap-delay = <0x0>;
++			};
++		};
++		spi@1 { /* chips select 1 */
++			compatible = "tegra-spidev";
++			reg = <0x1>;
++			spi-max-frequency = <50000000>;
++			controller-data {
++				nvidia,enable-hw-based-cs;
++				nvidia,rx-clk-tap-delay = <0x10>;
++				nvidia,tx-clk-tap-delay = <0x0>;
++			};
++		};
++	};
++
++	serial@3100000 {/* UARTA, for 40 pin header */
++		status = "okay";
++	};
++
++	mttcan@c310000 {
++		status = "okay";
++	};
++
++	serial@3140000 {
++		/* UARTE, Goes to M2.E and also some of the pins to bootstrap */
++		status = "okay";
++	};
++
++	serial@31d0000 {/* UARTI - SBSA */
++		status = "okay";
++	};
++
++	tachometer@39c0000 {
++		status = "okay";
++		upper-threshold = <0xfffff>;
++		lower-threshold = <0x0>;
++	};
++
++	pwm@3280000 {/* PWM1 40pin header, pin 15 */
++		status = "okay";
++	};
++
++	pwm@32a0000 {/* PWM3 - FAN */
++		status = "okay";
++	};
++
++	pwm@c340000 { /* PWM4 - OVR */
++		status = "disabled";
++	};
++
++	pwm@32c0000 {/* PWM5 40 pin header, pin 33 */
++		status = "okay";
++	};
++
++	pwm@32d0000 {/* PWM6 OVR */
++		status = "disabled";
++	};
++
++	bluedroid_pm {
++		status = "disabled";
++	};
++
++	display@13800000 {
++		status = "okay";
++	};
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-0000-a0-ornx.dtsi b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-0000-a0-ornx.dtsi
+new file mode 100644
+index 000000000..31415f59d
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-0000-a0-ornx.dtsi
+@@ -0,0 +1,252 @@
++/*
++ * Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++#include <dt-bindings/gpio/tegra234-gpio.h>
++#include "dt-bindings/input/input.h"
++#include "tegra234-p3768-0000-a0-pwm-fan.dtsi"
++#include "tegra234-p3768-0000-a0-pcie.dtsi"
++#include "tegra234-p3768-0000-a0-fixed-regulator.dtsi"
++#include "tegra234-p3768-audio.dtsi"
++//#include "tegra234-p3768-camera-rbpcv2-imx219.dtsi"
++//#include "tegra234-p3768-camera-rbpcv3-imx477.dtsi"
++#include "tegra234-p3768-camera-dsboard-ornx-imx219.dtsi"
++
++/ {
++	gpio-keys {
++		compatible = "gpio-keys";
++		gpio-keys,name = "gpio-keys";
++		status = "okay";
++
++		forcerecovery {
++			label = "force-recovery";
++			gpios = <&tegra_main_gpio TEGRA234_MAIN_GPIO(G, 0) GPIO_ACTIVE_LOW>;
++			linux,code = <BTN_1>;
++		};
++
++		power_key {
++			label = "power-key";
++			gpios = <&tegra_aon_gpio TEGRA234_AON_GPIO(EE, 4) GPIO_ACTIVE_LOW>;
++			linux,code = <KEY_POWER>;
++			gpio-key,wakeup;
++		};
++	};
++
++	eeprom-manager {
++		data-size = <0x100>;
++		bus@0 {
++			i2c-bus = <&gen1_i2c>;
++			eeprom@1 {
++				slave-address = <0x57>;
++				label = "cvb";
++			};
++		};
++
++		bus@1 {
++			i2c-bus = <&gen2_i2c>;
++			eeprom@1 {
++				slave-address = <0x50>;
++				label = "super-module";
++			};
++		};
++	};
++
++	xusb_padctl: xusb_padctl@3520000 {
++		status = "okay";
++		pads {
++			usb2 {
++				lanes {
++					usb2-0 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++					usb2-1 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++					usb2-2 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++				};
++			};
++			usb3 {
++				lanes {
++					usb3-0 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++					usb3-1 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++					usb3-2 {
++						nvidia,function = "xusb";
++						status = "okay";
++					};
++				};
++			};
++		};
++
++		ports {
++			usb2-0 {/* Goes to recovery port */
++				mode = "otg";
++				status = "okay";
++				usb-role-switch;
++				connector {
++					compatible = "usb-b-connector", "gpio-usb-b-connector";
++ 					label = "micro-USB";
++ 					data-role = "micro";
++ 					vbus-gpio = <&tegra_main_gpio TEGRA234_MAIN_GPIO(Z, 1) GPIO_ACTIVE_LOW>;
++ 				};
++			};
++			usb2-1 {/* Goes to hub */
++				mode = "host";
++				status = "okay";
++			};
++			usb2-2 {/* Goes to M2.E */
++				mode = "host";
++				status = "okay";
++			};
++			usb3-0 {/* Goes to hub */
++				nvidia,usb2-companion = <1>;
++				status = "okay";
++			};
++			usb3-1 {
++				nvidia,usb2-companion = <2>;
++				status = "okay";
++			};
++			usb3-2 {
++				//nvidia,usb2-companion = <0>;
++				nvidia,usb2-companion = <2>; 
++				status = "okay";
++			};
++		};
++	};
++
++	tegra_xudc: xudc@3550000 {
++		status = "okay";
++		phys = <&{/xusb_padctl@3520000/pads/usb2/lanes/usb2-0}>;
++		phy-names = "usb2-0";
++		nvidia,xusb-padctl = <&xusb_padctl>;
++	};
++
++	tegra_xhci: xhci@3610000 {
++		status = "okay";
++		phys = <&{/xusb_padctl@3520000/pads/usb2/lanes/usb2-0}>,
++			<&{/xusb_padctl@3520000/pads/usb2/lanes/usb2-1}>,
++			<&{/xusb_padctl@3520000/pads/usb2/lanes/usb2-2}>,
++			<&{/xusb_padctl@3520000/pads/usb3/lanes/usb3-0}>,
++			<&{/xusb_padctl@3520000/pads/usb3/lanes/usb3-1}>,
++			<&{/xusb_padctl@3520000/pads/usb3/lanes/usb3-2}>;
++		phy-names = "usb2-0", "usb2-1", "usb2-2", "usb3-0", "usb3-1", "usb3-2";
++		nvidia,xusb-padctl = <&xusb_padctl>;
++	};
++
++	spi@3210000{ /* SPI1 in 40 pin conn */
++		status = "okay";
++		spi@0 { /* chip select 0 */
++			compatible = "tegra-spidev";
++			reg = <0x0>;
++			spi-max-frequency = <50000000>;
++			controller-data {
++				nvidia,enable-hw-based-cs;
++				nvidia,rx-clk-tap-delay = <0x10>;
++				nvidia,tx-clk-tap-delay = <0x0>;
++			};
++		};
++		spi@1 { /* chip select 1 */
++			compatible = "tegra-spidev";
++			reg = <0x1>;
++			spi-max-frequency = <50000000>;
++			controller-data {
++				nvidia,enable-hw-based-cs;
++				nvidia,rx-clk-tap-delay = <0x10>;
++				nvidia,tx-clk-tap-delay = <0x0>;
++			};
++		};
++	};
++
++	spi@3230000{ /* SPI3 in 40 pin conn */
++		status = "okay";
++		spi@0 { /* chip select 0 */
++			compatible = "tegra-spidev";
++			reg = <0x0>;
++			spi-max-frequency = <50000000>;
++			controller-data {
++				nvidia,enable-hw-based-cs;
++				nvidia,rx-clk-tap-delay = <0x10>;
++				nvidia,tx-clk-tap-delay = <0x0>;
++			};
++		};
++		spi@1 { /* chips select 1 */
++			compatible = "tegra-spidev";
++			reg = <0x1>;
++			spi-max-frequency = <50000000>;
++			controller-data {
++				nvidia,enable-hw-based-cs;
++				nvidia,rx-clk-tap-delay = <0x10>;
++				nvidia,tx-clk-tap-delay = <0x0>;
++			};
++		};
++	};
++
++	serial@3100000 {/* UARTA, for 40 pin header */
++		status = "okay";
++	};
++
++	mttcan@c310000 {
++		status = "okay";
++	};
++
++	serial@3140000 {
++		/* UARTE, Goes to M2.E and also some of the pins to bootstrap */
++		status = "okay";
++	};
++
++	serial@31d0000 {/* UARTI - SBSA */
++		status = "okay";
++	};
++
++	tachometer@39c0000 {
++		status = "okay";
++		upper-threshold = <0xfffff>;
++		lower-threshold = <0x0>;
++	};
++
++	pwm@3280000 {/* PWM1 40pin header, pin 15 */
++		status = "okay";
++	};
++
++	pwm@32a0000 {/* PWM3 - FAN */
++		status = "okay";
++	};
++
++	pwm@c340000 { /* PWM4 - OVR */
++		status = "disabled";
++	};
++
++	pwm@32c0000 {/* PWM5 40 pin header, pin 33 */
++		status = "okay";
++	};
++
++	pwm@32d0000 {/* PWM6 OVR */
++		status = "disabled";
++	};
++
++	bluedroid_pm {
++		status = "disabled";
++	};
++
++	display@13800000 {
++		status = "okay";
++	};
++};
+diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+index 50863fd87..26dd36ecd 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_82575.c
++++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+@@ -597,6 +597,7 @@ static s32 igb_get_invariants_82575(struct e1000_hw *hw)
+ 	case E1000_DEV_ID_I210_FIBER:
+ 	case E1000_DEV_ID_I210_SERDES:
+ 	case E1000_DEV_ID_I210_SGMII:
++	case E1000_DEV_ID_I210_UNPROGRAMMED:
+ 	case E1000_DEV_ID_I210_COPPER_FLASHLESS:
+ 	case E1000_DEV_ID_I210_SERDES_FLASHLESS:
+ 		mac->type = e1000_i210;
+diff --git a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
+index 5d87957b2..437660a72 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_hw.h
++++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
+@@ -43,6 +43,7 @@ struct e1000_hw;
+ #define E1000_DEV_ID_I210_FIBER			0x1536
+ #define E1000_DEV_ID_I210_SERDES		0x1537
+ #define E1000_DEV_ID_I210_SGMII			0x1538
++#define E1000_DEV_ID_I210_UNPROGRAMMED  	0x1531
+ #define E1000_DEV_ID_I210_COPPER_FLASHLESS	0x157B
+ #define E1000_DEV_ID_I210_SERDES_FLASHLESS	0x157C
+ #define E1000_DEV_ID_I211_COPPER		0x1539
+diff --git a/drivers/net/ethernet/intel/igb/e1000_i210.c b/drivers/net/ethernet/intel/igb/e1000_i210.c
+index 926590145..a98dc51e3 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_i210.c
++++ b/drivers/net/ethernet/intel/igb/e1000_i210.c
+@@ -656,7 +656,8 @@ bool igb_get_flash_presence_i210(struct e1000_hw *hw)
+ 	if (eec & E1000_EECD_FLASH_DETECTED_I210)
+ 		ret_val = true;
+ 
+-	return ret_val;
++	//return ret_val;
++	return false; //Do not read the flash
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index f854d41c6..02f46bb9d 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -69,6 +69,7 @@ static const struct pci_device_id igb_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_FIBER), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SERDES), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SGMII), board_82575 },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_UNPROGRAMMED), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_COPPER_FLASHLESS), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SERDES_FLASHLESS), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_COPPER), board_82575 },
+diff --git a/drivers/net/ethernet/microchip/lan743x_main.c b/drivers/net/ethernet/microchip/lan743x_main.c
+index d59a9ba36..75a861cee 100644
+--- a/drivers/net/ethernet/microchip/lan743x_main.c
++++ b/drivers/net/ethernet/microchip/lan743x_main.c
+@@ -146,14 +146,11 @@ static void lan743x_intr_software_isr(void *context)
+ {
+ 	struct lan743x_adapter *adapter = context;
+ 	struct lan743x_intr *intr = &adapter->intr;
+-	u32 int_sts;
+ 
+-	int_sts = lan743x_csr_read(adapter, INT_STS);
+-	if (int_sts & INT_BIT_SW_GP_) {
+-		/* disable the interrupt to prevent repeated re-triggering */
+-		lan743x_csr_write(adapter, INT_EN_CLR, INT_BIT_SW_GP_);
+-		intr->software_isr_flag = 1;
+-	}
++	/* disable the interrupt to prevent repeated re-triggering */
++	lan743x_csr_write(adapter, INT_EN_CLR, INT_BIT_SW_GP_);
++	intr->software_isr_flag = true;
++	wake_up(&intr->software_isr_wq);
+ }
+ 
+ static void lan743x_tx_isr(void *context, u32 int_sts, u32 flags)
+@@ -350,27 +347,22 @@ irq_done:
+ static int lan743x_intr_test_isr(struct lan743x_adapter *adapter)
+ {
+ 	struct lan743x_intr *intr = &adapter->intr;
+-	int result = -ENODEV;
+-	int timeout = 10;
++	int ret;
+ 
+-	intr->software_isr_flag = 0;
++	intr->software_isr_flag = false;
+ 
+-	/* enable interrupt */
++	/* enable and activate test interrupt */
+ 	lan743x_csr_write(adapter, INT_EN_SET, INT_BIT_SW_GP_);
+-
+-	/* activate interrupt here */
+ 	lan743x_csr_write(adapter, INT_SET, INT_BIT_SW_GP_);
+-	while ((timeout > 0) && (!(intr->software_isr_flag))) {
+-		usleep_range(1000, 20000);
+-		timeout--;
+-	}
+ 
+-	if (intr->software_isr_flag)
+-		result = 0;
++	ret = wait_event_timeout(intr->software_isr_wq,
++				 intr->software_isr_flag,
++				 msecs_to_jiffies(200));
+ 
+-	/* disable interrupts */
++	/* disable test interrupt */
+ 	lan743x_csr_write(adapter, INT_EN_CLR, INT_BIT_SW_GP_);
+-	return result;
++
++	return ret > 0 ? 0 : -ENODEV;
+ }
+ 
+ static int lan743x_intr_register_isr(struct lan743x_adapter *adapter,
+@@ -544,6 +536,8 @@ static int lan743x_intr_open(struct lan743x_adapter *adapter)
+ 		flags |= LAN743X_VECTOR_FLAG_SOURCE_ENABLE_R2C;
+ 	}
+ 
++	init_waitqueue_head(&intr->software_isr_wq);
++
+ 	ret = lan743x_intr_register_isr(adapter, 0, flags,
+ 					INT_BIT_ALL_RX_ | INT_BIT_ALL_TX_ |
+ 					INT_BIT_ALL_OTHER_,
+@@ -832,14 +826,13 @@ static int lan743x_mac_init(struct lan743x_adapter *adapter)
+ 
+ static int lan743x_mac_open(struct lan743x_adapter *adapter)
+ {
+-	int ret = 0;
+ 	u32 temp;
+ 
+ 	temp = lan743x_csr_read(adapter, MAC_RX);
+ 	lan743x_csr_write(adapter, MAC_RX, temp | MAC_RX_RXEN_);
+ 	temp = lan743x_csr_read(adapter, MAC_TX);
+ 	lan743x_csr_write(adapter, MAC_TX, temp | MAC_TX_TXEN_);
+-	return ret;
++	return 0;
+ }
+ 
+ static void lan743x_mac_close(struct lan743x_adapter *adapter)
+@@ -895,8 +888,8 @@ static int lan743x_mac_set_mtu(struct lan743x_adapter *adapter, int new_mtu)
+ 	}
+ 
+ 	mac_rx &= ~(MAC_RX_MAX_SIZE_MASK_);
+-	mac_rx |= (((new_mtu + ETH_HLEN + 4) << MAC_RX_MAX_SIZE_SHIFT_) &
+-		  MAC_RX_MAX_SIZE_MASK_);
++	mac_rx |= (((new_mtu + ETH_HLEN + ETH_FCS_LEN)
++		  << MAC_RX_MAX_SIZE_SHIFT_) & MAC_RX_MAX_SIZE_MASK_);
+ 	lan743x_csr_write(adapter, MAC_RX, mac_rx);
+ 
+ 	if (enabled) {
+@@ -1065,6 +1058,7 @@ static int lan743x_phy_open(struct lan743x_adapter *adapter)
+ 
+ 	phy_start(phydev);
+ 	phy_start_aneg(phydev);
++	phy_attached_info(phydev);
+ 	return 0;
+ 
+ return_error:
+@@ -1771,13 +1765,10 @@ static int lan743x_tx_ring_init(struct lan743x_tx *tx)
+ 	}
+ 	if (dma_set_mask_and_coherent(&tx->adapter->pdev->dev,
+ 				      DMA_BIT_MASK(64))) {
+-		if (dma_set_mask_and_coherent(&tx->adapter->pdev->dev,
+-					      DMA_BIT_MASK(32))) {
+-			dev_warn(&tx->adapter->pdev->dev,
+-				 "lan743x_: No suitable DMA available\n");
+-			ret = -ENOMEM;
+-			goto cleanup;
+-		}
++		dev_warn(&tx->adapter->pdev->dev,
++			 "lan743x_: No suitable DMA available\n");
++		ret = -ENOMEM;
++		goto cleanup;
+ 	}
+ 	ring_allocation_size = ALIGN(tx->ring_size *
+ 				     sizeof(struct lan743x_tx_descriptor),
+@@ -1962,15 +1953,6 @@ static int lan743x_rx_next_index(struct lan743x_rx *rx, int index)
+ 	return ((++index) % rx->ring_size);
+ }
+ 
+-static struct sk_buff *lan743x_rx_allocate_skb(struct lan743x_rx *rx, gfp_t gfp)
+-{
+-	int length = 0;
+-
+-	length = (LAN743X_MAX_FRAME_SIZE + ETH_HLEN + 4 + RX_HEAD_PADDING);
+-	return __netdev_alloc_skb(rx->adapter->netdev,
+-				  length, gfp);
+-}
+-
+ static void lan743x_rx_update_tail(struct lan743x_rx *rx, int index)
+ {
+ 	/* update the tail once per 8 descriptors */
+@@ -1980,35 +1962,57 @@ static void lan743x_rx_update_tail(struct lan743x_rx *rx, int index)
+ }
+ 
+ static int lan743x_rx_init_ring_element(struct lan743x_rx *rx, int index,
+-					struct sk_buff *skb)
++					gfp_t gfp)
+ {
++	struct net_device *netdev = rx->adapter->netdev;
++	struct device *dev = &rx->adapter->pdev->dev;
+ 	struct lan743x_rx_buffer_info *buffer_info;
++	unsigned int buffer_length, used_length;
+ 	struct lan743x_rx_descriptor *descriptor;
+-	int length = 0;
++	struct sk_buff *skb;
++	dma_addr_t dma_ptr;
++
++	buffer_length = netdev->mtu + ETH_HLEN + ETH_FCS_LEN + RX_HEAD_PADDING;
+ 
+-	length = (LAN743X_MAX_FRAME_SIZE + ETH_HLEN + 4 + RX_HEAD_PADDING);
+ 	descriptor = &rx->ring_cpu_ptr[index];
+ 	buffer_info = &rx->buffer_info[index];
+-	buffer_info->skb = skb;
+-	if (!(buffer_info->skb))
++	skb = __netdev_alloc_skb(netdev, buffer_length, gfp);
++	if (!skb)
+ 		return -ENOMEM;
+-	buffer_info->dma_ptr = dma_map_single(&rx->adapter->pdev->dev,
+-					      buffer_info->skb->data,
+-					      length,
+-					      DMA_FROM_DEVICE);
+-	if (dma_mapping_error(&rx->adapter->pdev->dev,
+-			      buffer_info->dma_ptr)) {
+-		buffer_info->dma_ptr = 0;
++	dma_ptr = dma_map_single(dev, skb->data, buffer_length, DMA_FROM_DEVICE);
++	if (dma_mapping_error(dev, dma_ptr)) {
++		dev_kfree_skb_any(skb);
+ 		return -ENOMEM;
+ 	}
++	if (buffer_info->dma_ptr) {
++		/* sync used area of buffer only */
++		if (le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_LS_)
++			/* frame length is valid only if LS bit is set.
++			 * it's a safe upper bound for the used area in this
++			 * buffer.
++			 */
++			used_length = min(RX_DESC_DATA0_FRAME_LENGTH_GET_
++					  (le32_to_cpu(descriptor->data0)),
++					  buffer_info->buffer_length);
++		else
++			used_length = buffer_info->buffer_length;
++		dma_sync_single_for_cpu(dev, buffer_info->dma_ptr,
++					used_length,
++					DMA_FROM_DEVICE);
++		dma_unmap_single_attrs(dev, buffer_info->dma_ptr,
++				       buffer_info->buffer_length,
++				       DMA_FROM_DEVICE,
++				       DMA_ATTR_SKIP_CPU_SYNC);
++	}
+ 
+-	buffer_info->buffer_length = length;
++	buffer_info->skb = skb;
++	buffer_info->dma_ptr = dma_ptr;
++	buffer_info->buffer_length = buffer_length;
+ 	descriptor->data1 = cpu_to_le32(DMA_ADDR_LOW32(buffer_info->dma_ptr));
+ 	descriptor->data2 = cpu_to_le32(DMA_ADDR_HIGH32(buffer_info->dma_ptr));
+ 	descriptor->data3 = 0;
+ 	descriptor->data0 = cpu_to_le32((RX_DESC_DATA0_OWN_ |
+-			    (length & RX_DESC_DATA0_BUF_LENGTH_MASK_)));
+-	skb_reserve(buffer_info->skb, RX_HEAD_PADDING);
++			    (buffer_length & RX_DESC_DATA0_BUF_LENGTH_MASK_)));
+ 	lan743x_rx_update_tail(rx, index);
+ 
+ 	return 0;
+@@ -2057,16 +2061,32 @@ static void lan743x_rx_release_ring_element(struct lan743x_rx *rx, int index)
+ 	memset(buffer_info, 0, sizeof(*buffer_info));
+ }
+ 
+-static int lan743x_rx_process_packet(struct lan743x_rx *rx)
++static struct sk_buff *
++lan743x_rx_trim_skb(struct sk_buff *skb, int frame_length)
++{
++	if (skb_linearize(skb)) {
++		dev_kfree_skb_irq(skb);
++		return NULL;
++	}
++	frame_length = max_t(int, 0, frame_length - ETH_FCS_LEN);
++	if (skb->len > frame_length) {
++		skb->tail -= skb->len - frame_length;
++		skb->len = frame_length;
++	}
++	return skb;
++}
++
++static int lan743x_rx_process_buffer(struct lan743x_rx *rx)
+ {
+-	struct skb_shared_hwtstamps *hwtstamps = NULL;
+-	int result = RX_PROCESS_RESULT_NOTHING_TO_DO;
+ 	int current_head_index = le32_to_cpu(*rx->head_cpu_ptr);
++	struct lan743x_rx_descriptor *descriptor, *desc_ext;
++	struct net_device *netdev = rx->adapter->netdev;
++	int result = RX_PROCESS_RESULT_NOTHING_TO_DO;
+ 	struct lan743x_rx_buffer_info *buffer_info;
+-	struct lan743x_rx_descriptor *descriptor;
++	int frame_length, buffer_length;
+ 	int extension_index = -1;
+-	int first_index = -1;
+-	int last_index = -1;
++	bool is_last, is_first;
++	struct sk_buff *skb;
+ 
+ 	if (current_head_index < 0 || current_head_index >= rx->ring_size)
+ 		goto done;
+@@ -2074,164 +2094,121 @@ static int lan743x_rx_process_packet(struct lan743x_rx *rx)
+ 	if (rx->last_head < 0 || rx->last_head >= rx->ring_size)
+ 		goto done;
+ 
+-	if (rx->last_head != current_head_index) {
+-		descriptor = &rx->ring_cpu_ptr[rx->last_head];
+-		if (le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_OWN_)
+-			goto done;
++	if (rx->last_head == current_head_index)
++		goto done;
+ 
+-		if (!(le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_FS_))
+-			goto done;
++	descriptor = &rx->ring_cpu_ptr[rx->last_head];
++	if (le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_OWN_)
++		goto done;
++	buffer_info = &rx->buffer_info[rx->last_head];
+ 
+-		first_index = rx->last_head;
+-		if (le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_LS_) {
+-			last_index = rx->last_head;
+-		} else {
+-			int index;
++	is_last = le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_LS_;
++	is_first = le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_FS_;
+ 
+-			index = lan743x_rx_next_index(rx, first_index);
+-			while (index != current_head_index) {
+-				descriptor = &rx->ring_cpu_ptr[index];
+-				if (le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_OWN_)
+-					goto done;
++	if (is_last && le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_EXT_) {
++		/* extension is expected to follow */
++		int index = lan743x_rx_next_index(rx, rx->last_head);
+ 
+-				if (le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_LS_) {
+-					last_index = index;
+-					break;
+-				}
+-				index = lan743x_rx_next_index(rx, index);
+-			}
+-		}
+-		if (last_index >= 0) {
+-			descriptor = &rx->ring_cpu_ptr[last_index];
+-			if (le32_to_cpu(descriptor->data0) & RX_DESC_DATA0_EXT_) {
+-				/* extension is expected to follow */
+-				int index = lan743x_rx_next_index(rx,
+-								  last_index);
+-				if (index != current_head_index) {
+-					descriptor = &rx->ring_cpu_ptr[index];
+-					if (le32_to_cpu(descriptor->data0) &
+-					    RX_DESC_DATA0_OWN_) {
+-						goto done;
+-					}
+-					if (le32_to_cpu(descriptor->data0) &
+-					    RX_DESC_DATA0_EXT_) {
+-						extension_index = index;
+-					} else {
+-						goto done;
+-					}
+-				} else {
+-					/* extension is not yet available */
+-					/* prevent processing of this packet */
+-					first_index = -1;
+-					last_index = -1;
+-				}
+-			}
+-		}
++		if (index == current_head_index)
++			/* extension not yet available */
++			goto done;
++		desc_ext = &rx->ring_cpu_ptr[index];
++		if (le32_to_cpu(desc_ext->data0) & RX_DESC_DATA0_OWN_)
++			/* extension not yet available */
++			goto done;
++		if (!(le32_to_cpu(desc_ext->data0) & RX_DESC_DATA0_EXT_))
++			goto move_forward;
++		extension_index = index;
+ 	}
+-	if (first_index >= 0 && last_index >= 0) {
+-		int real_last_index = last_index;
+-		struct sk_buff *skb = NULL;
+-		u32 ts_sec = 0;
+-		u32 ts_nsec = 0;
+-
+-		/* packet is available */
+-		if (first_index == last_index) {
+-			/* single buffer packet */
+-			struct sk_buff *new_skb = NULL;
+-			int packet_length;
+-
+-			new_skb = lan743x_rx_allocate_skb(rx,
+-							  GFP_ATOMIC | GFP_DMA);
+-			if (!new_skb) {
+-				/* failed to allocate next skb.
+-				 * Memory is very low.
+-				 * Drop this packet and reuse buffer.
+-				 */
+-				lan743x_rx_reuse_ring_element(rx, first_index);
+-				goto process_extension;
+-			}
+ 
+-			buffer_info = &rx->buffer_info[first_index];
+-			skb = buffer_info->skb;
+-			descriptor = &rx->ring_cpu_ptr[first_index];
+-
+-			/* unmap from dma */
+-			if (buffer_info->dma_ptr) {
+-				dma_unmap_single(&rx->adapter->pdev->dev,
+-						 buffer_info->dma_ptr,
+-						 buffer_info->buffer_length,
+-						 DMA_FROM_DEVICE);
+-				buffer_info->dma_ptr = 0;
+-				buffer_info->buffer_length = 0;
+-			}
+-			buffer_info->skb = NULL;
+-			packet_length =	RX_DESC_DATA0_FRAME_LENGTH_GET_
+-					(le32_to_cpu(descriptor->data0));
+-			skb_put(skb, packet_length - 4);
+-			skb->protocol = eth_type_trans(skb,
+-						       rx->adapter->netdev);
+-			lan743x_rx_init_ring_element(rx, first_index, new_skb);
+-		} else {
+-			int index = first_index;
+-
+-			/* multi buffer packet not supported */
+-			/* this should not happen since
+-			 * buffers are allocated to be at least jumbo size
+-			 */
+-
+-			/* clean up buffers */
+-			if (first_index <= last_index) {
+-				while ((index >= first_index) &&
+-				       (index <= last_index)) {
+-					lan743x_rx_reuse_ring_element(rx,
+-								      index);
+-					index = lan743x_rx_next_index(rx,
+-								      index);
+-				}
+-			} else {
+-				while ((index >= first_index) ||
+-				       (index <= last_index)) {
+-					lan743x_rx_reuse_ring_element(rx,
+-								      index);
+-					index = lan743x_rx_next_index(rx,
+-								      index);
+-				}
+-			}
+-		}
++	/* Only the last buffer in a multi-buffer frame contains the total frame
++	 * length. The chip occasionally sends more buffers than strictly
++	 * required to reach the total frame length.
++	 * Handle this by adding all buffers to the skb in their entirety.
++	 * Once the real frame length is known, trim the skb.
++	 */
++	frame_length =
++		RX_DESC_DATA0_FRAME_LENGTH_GET_(le32_to_cpu(descriptor->data0));
++	buffer_length = buffer_info->buffer_length;
++
++	netdev_dbg(netdev, "%s%schunk: %d/%d",
++		   is_first ? "first " : "      ",
++		   is_last  ? "last  " : "      ",
++		   frame_length, buffer_length);
++
++	/* save existing skb, allocate new skb and map to dma */
++	skb = buffer_info->skb;
++	if (lan743x_rx_init_ring_element(rx, rx->last_head,
++					 GFP_ATOMIC | GFP_DMA)) {
++		/* failed to allocate next skb.
++		 * Memory is very low.
++		 * Drop this packet and reuse buffer.
++		 */
++		lan743x_rx_reuse_ring_element(rx, rx->last_head);
++		/* drop packet that was being assembled */
++		dev_kfree_skb_irq(rx->skb_head);
++		rx->skb_head = NULL;
++		goto process_extension;
++	}
++
++	/* add buffers to skb via skb->frag_list */
++	if (is_first) {
++		skb_reserve(skb, RX_HEAD_PADDING);
++		skb_put(skb, buffer_length - RX_HEAD_PADDING);
++		if (rx->skb_head)
++			dev_kfree_skb_irq(rx->skb_head);
++		rx->skb_head = skb;
++	} else if (rx->skb_head) {
++		skb_put(skb, buffer_length);
++		if (skb_shinfo(rx->skb_head)->frag_list)
++			rx->skb_tail->next = skb;
++		else
++			skb_shinfo(rx->skb_head)->frag_list = skb;
++		rx->skb_tail = skb;
++		rx->skb_head->len += skb->len;
++		rx->skb_head->data_len += skb->len;
++		rx->skb_head->truesize += skb->truesize;
++	} else {
++		/* packet to assemble has already been dropped because one or
++		 * more of its buffers could not be allocated
++		 */
++		netdev_dbg(netdev, "drop buffer intended for dropped packet");
++		dev_kfree_skb_irq(skb);
++	}
+ 
+ process_extension:
+-		if (extension_index >= 0) {
+-			descriptor = &rx->ring_cpu_ptr[extension_index];
+-			buffer_info = &rx->buffer_info[extension_index];
+-
+-			ts_sec = le32_to_cpu(descriptor->data1);
+-			ts_nsec = (le32_to_cpu(descriptor->data2) &
+-				  RX_DESC_DATA2_TS_NS_MASK_);
+-			lan743x_rx_reuse_ring_element(rx, extension_index);
+-			real_last_index = extension_index;
+-		}
++	if (extension_index >= 0) {
++		u32 ts_sec;
++		u32 ts_nsec;
+ 
+-		if (!skb) {
+-			result = RX_PROCESS_RESULT_PACKET_DROPPED;
+-			goto move_forward;
+-		}
++		ts_sec = le32_to_cpu(desc_ext->data1);
++		ts_nsec = (le32_to_cpu(desc_ext->data2) &
++			  RX_DESC_DATA2_TS_NS_MASK_);
++		if (rx->skb_head)
++			skb_hwtstamps(rx->skb_head)->hwtstamp =
++				ktime_set(ts_sec, ts_nsec);
++		lan743x_rx_reuse_ring_element(rx, extension_index);
++		rx->last_head = extension_index;
++		netdev_dbg(netdev, "process extension");
++	}
+ 
+-		if (extension_index < 0)
+-			goto pass_packet_to_os;
+-		hwtstamps = skb_hwtstamps(skb);
+-		if (hwtstamps)
+-			hwtstamps->hwtstamp = ktime_set(ts_sec, ts_nsec);
++	if (is_last && rx->skb_head)
++		rx->skb_head = lan743x_rx_trim_skb(rx->skb_head, frame_length);
+ 
+-pass_packet_to_os:
+-		/* pass packet to OS */
+-		napi_gro_receive(&rx->napi, skb);
+-		result = RX_PROCESS_RESULT_PACKET_RECEIVED;
++	if (is_last && rx->skb_head) {
++		rx->skb_head->protocol = eth_type_trans(rx->skb_head,
++							rx->adapter->netdev);
++		netdev_dbg(netdev, "sending %d byte frame to OS",
++			   rx->skb_head->len);
++		napi_gro_receive(&rx->napi, rx->skb_head);
++		rx->skb_head = NULL;
++	}
+ 
+ move_forward:
+-		/* push tail and head forward */
+-		rx->last_tail = real_last_index;
+-		rx->last_head = lan743x_rx_next_index(rx, real_last_index);
+-	}
++	/* push tail and head forward */
++	rx->last_tail = rx->last_head;
++	rx->last_head = lan743x_rx_next_index(rx, rx->last_head);
++	result = RX_PROCESS_RESULT_BUFFER_RECEIVED;
+ done:
+ 	return result;
+ }
+@@ -2250,12 +2227,12 @@ static int lan743x_rx_napi_poll(struct napi_struct *napi, int weight)
+ 				  DMAC_INT_BIT_RXFRM_(rx->channel_number));
+ 	}
+ 	for (count = 0; count < weight; count++) {
+-		result = lan743x_rx_process_packet(rx);
++		result = lan743x_rx_process_buffer(rx);
+ 		if (result == RX_PROCESS_RESULT_NOTHING_TO_DO)
+ 			break;
+ 	}
+ 	rx->frame_count += count;
+-	if (count == weight || result == RX_PROCESS_RESULT_PACKET_RECEIVED)
++	if (count == weight || result == RX_PROCESS_RESULT_BUFFER_RECEIVED)
+ 		return weight;
+ 
+ 	if (!napi_complete_done(napi, count))
+@@ -2330,13 +2307,10 @@ static int lan743x_rx_ring_init(struct lan743x_rx *rx)
+ 	}
+ 	if (dma_set_mask_and_coherent(&rx->adapter->pdev->dev,
+ 				      DMA_BIT_MASK(64))) {
+-		if (dma_set_mask_and_coherent(&rx->adapter->pdev->dev,
+-					      DMA_BIT_MASK(32))) {
+-			dev_warn(&rx->adapter->pdev->dev,
+-				 "lan743x_: No suitable DMA available\n");
+-			ret = -ENOMEM;
+-			goto cleanup;
+-		}
++		dev_warn(&rx->adapter->pdev->dev,
++			 "lan743x_: No suitable DMA available\n");
++		ret = -ENOMEM;
++		goto cleanup;
+ 	}
+ 	ring_allocation_size = ALIGN(rx->ring_size *
+ 				     sizeof(struct lan743x_rx_descriptor),
+@@ -2377,16 +2351,16 @@ static int lan743x_rx_ring_init(struct lan743x_rx *rx)
+ 
+ 	rx->last_head = 0;
+ 	for (index = 0; index < rx->ring_size; index++) {
+-		struct sk_buff *new_skb = lan743x_rx_allocate_skb(rx,
+-								   GFP_KERNEL);
+-
+-		ret = lan743x_rx_init_ring_element(rx, index, new_skb);
++		ret = lan743x_rx_init_ring_element(rx, index, GFP_KERNEL);
+ 		if (ret)
+ 			goto cleanup;
+ 	}
+ 	return 0;
+ 
+ cleanup:
++	netif_warn(rx->adapter, ifup, rx->adapter->netdev,
++		   "Error allocating memory for LAN743x\n");
++
+ 	lan743x_rx_ring_cleanup(rx);
+ 	return ret;
+ }
+@@ -3191,7 +3165,7 @@ static int lan743x_pm_suspend(struct device *dev)
+ 		lan743x_pm_set_wol(adapter);
+ 
+ 	/* Host sets PME_En, put D3hot */
+-	return pci_prepare_to_sleep(pdev);;
++	return pci_prepare_to_sleep(pdev);
+ }
+ 
+ static int lan743x_pm_resume(struct device *dev)
+diff --git a/drivers/net/ethernet/microchip/lan743x_main.h b/drivers/net/ethernet/microchip/lan743x_main.h
+index 04d4aa21d..8b02d2db3 100644
+--- a/drivers/net/ethernet/microchip/lan743x_main.h
++++ b/drivers/net/ethernet/microchip/lan743x_main.h
+@@ -617,7 +617,8 @@ struct lan743x_intr {
+ 	int			number_of_vectors;
+ 	bool			using_vectors;
+ 
+-	int			software_isr_flag;
++	bool			software_isr_flag;
++	wait_queue_head_t	software_isr_wq;
+ };
+ 
+ #define LAN743X_MAX_FRAME_SIZE			(9 * 1024)
+@@ -701,6 +702,8 @@ struct lan743x_rx {
+ 	struct napi_struct napi;
+ 
+ 	u32		frame_count;
++
++	struct sk_buff *skb_head, *skb_tail;
+ };
+ 
+ struct lan743x_adapter {
+@@ -831,13 +834,13 @@ struct lan743x_rx_buffer_info {
+ 	unsigned int    buffer_length;
+ };
+ 
+-#define LAN743X_RX_RING_SIZE        (65)
++#define LAN743X_RX_RING_SIZE        (128)
+ 
+ #define RX_PROCESS_RESULT_NOTHING_TO_DO     (0)
+-#define RX_PROCESS_RESULT_PACKET_RECEIVED   (1)
+-#define RX_PROCESS_RESULT_PACKET_DROPPED    (2)
++#define RX_PROCESS_RESULT_BUFFER_RECEIVED   (1)
+ 
+ u32 lan743x_csr_read(struct lan743x_adapter *adapter, int offset);
+ void lan743x_csr_write(struct lan743x_adapter *adapter, int offset, u32 data);
+ 
+ #endif /* _LAN743X_H */
++
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-camera-dsboard-ornx-imx477.dtsi b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-camera-dsboard-ornx-imx477.dtsi
+new file mode 100644
+index 000000000..b71261f0a
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-camera-dsboard-ornx-imx477.dtsi
+@@ -0,0 +1,81 @@
++/*
++ * Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "tegra234-camera-dsboard-ornx-imx477.dtsi"
++
++#define CAM0_PWDN	TEGRA234_MAIN_GPIO(H, 6)
++#define CAM1_PWDN	TEGRA234_MAIN_GPIO(AC, 0)
++#define CAM2_PWDN	TEGRA234_AON_GPIO(CC, 1) // GPIO04
++#define CAM3_PWDN	TEGRA234_AON_GPIO(EE, 2) // GPIO10
++#define CAMERA_I2C_MUX_BUS(x) (0x1E + x)
++
++// CAM0_MCLK - Pin_116 - GPIO(P, 0)
++// CAM1_MCLK - Pin_122 - GPIO(P, 1)
++// CAM2_MCLK - GPIO02 - GPIO(Q, 5)
++// CAM3_MCLK - GPIO11 - GPIO(Q, 6)
++
++
++/ {
++	i2c@3180000 {
++		pca9544a_70: pca9544a@70 {
++			status = "okay";
++			compatible = "nxp,pca9544";
++			reg = <0x70>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			vcc-supply = <&p3768_vdd_1v8>;
++			skip_mux_detect;
++			force_bus_start = <CAMERA_I2C_MUX_BUS(0)>;
++			i2c@0 {
++				reg = <0>;
++				i2c-mux,deselect-on-exit;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				imx477_a@1a {
++					reset-gpios = <&tegra_main_gpio CAM0_PWDN GPIO_ACTIVE_HIGH>;
++				};
++			};
++			i2c@1 {
++				reg = <1>;
++				i2c-mux,deselect-on-exit;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				imx477_b@1a {
++					reset-gpios = <&tegra_main_gpio CAM1_PWDN GPIO_ACTIVE_HIGH>;
++				};
++			};
++			i2c@2 {
++				reg = <2>;
++				i2c-mux,deselect-on-exit;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				imx477_c@1a {
++					reset-gpios = <&tegra_aon_gpio CAM2_PWDN GPIO_ACTIVE_HIGH>;
++				};
++			};
++			i2c@3 {
++				reg = <3>;
++				i2c-mux,deselect-on-exit;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				imx477_d@1a {
++					reset-gpios = <&tegra_aon_gpio CAM3_PWDN GPIO_ACTIVE_HIGH>;
++				};
++			};
++		};
++	};
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-camera-dsboard-ornx-imx477.dtsi b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-camera-dsboard-ornx-imx477.dtsi
+new file mode 100644
+index 000000000..631090f3f
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-camera-dsboard-ornx-imx477.dtsi
+@@ -0,0 +1,835 @@
++/*
++ * Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++#include <dt-bindings/media/camera.h>
++
++/ {
++	tegra-capture-vi  {
++		num-channels = <4>;
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			port@0 {
++				status = "okay";
++				reg = <0>;
++				dsboard_ornx_vi_in0: endpoint {
++					status = "okay";
++					port-index = <0>;
++					bus-width = <2>;
++					remote-endpoint = <&dsboard_ornx_csi_out0>;
++				};
++			};
++			port@1 {
++				status = "okay";
++				reg = <1>;
++				dsboard_ornx_vi_in1: endpoint {
++					status = "okay";
++					port-index = <1>;
++					bus-width = <2>;
++					remote-endpoint = <&dsboard_ornx_csi_out1>;
++				};
++			};
++			port@2 {
++				status = "okay";
++				reg = <2>;
++				dsboard_ornx_vi_in2: endpoint {
++					status = "okay";
++					port-index = <2>;
++					bus-width = <2>;
++					remote-endpoint = <&dsboard_ornx_csi_out2>;
++				};
++			};
++			port@3 {
++				status = "okay";
++				reg = <3>;
++				dsboard_ornx_vi_in3: endpoint {
++					status = "okay";
++					port-index = <3>;
++					bus-width = <2>;
++					remote-endpoint = <&dsboard_ornx_csi_out3>;
++				};
++			};
++		};
++	};
++
++	host1x@13e00000 {
++		nvcsi@15a00000 {
++			num-channels = <4>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "okay";
++			channel@0 {
++				status = "okay";
++				reg = <0>;
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					port@0 {
++						status = "okay";
++						reg = <0>;
++						dsboard_ornx_csi_in0: endpoint@0 {
++							status = "okay";
++							port-index = <0>;
++							bus-width = <2>;
++							remote-endpoint = <&dsboard_ornx_imx477_out0>;
++						};
++					};
++					port@1 {
++						status = "okay";
++						reg = <1>;
++						dsboard_ornx_csi_out0: endpoint@1 {
++							status = "okay";
++							remote-endpoint = <&dsboard_ornx_vi_in0>;
++						};
++					};
++				};
++			};
++			channel@1 {
++				status = "okay";
++				reg = <1>;
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					port@0 {
++						status = "okay";
++						reg = <0>;
++						dsboard_ornx_csi_in1: endpoint@2 {
++							status = "okay";
++							port-index = <1>;
++							bus-width = <2>;
++							remote-endpoint = <&dsboard_ornx_imx477_out1>;
++						};
++					};
++					port@1 {
++						status = "okay";
++						reg = <1>;
++						dsboard_ornx_csi_out1: endpoint@3 {
++							status = "okay";
++							remote-endpoint = <&dsboard_ornx_vi_in1>;
++						};
++					};
++				};
++			};
++			channel@2 {
++				status = "okay";
++				reg = <2>;
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					port@0 {
++						status = "okay";
++						reg = <0>;
++						dsboard_ornx_csi_in2: endpoint@4 {
++							status = "okay";
++							port-index = <2>;
++							bus-width = <2>;
++							remote-endpoint = <&dsboard_ornx_imx477_out2>;
++						};
++					};
++					port@1 {
++						status = "okay";
++						reg = <1>;
++						dsboard_ornx_csi_out2: endpoint@5 {
++							status = "okay";
++							remote-endpoint = <&dsboard_ornx_vi_in2>;
++						};
++					};
++				};
++			};
++			channel@3 {
++				status = "okay";
++				reg = <3>;
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					port@0 {
++						status = "okay";
++						reg = <0>;
++						dsboard_ornx_csi_in3: endpoint@6 {
++							status = "okay";
++							port-index = <3>;
++							bus-width = <2>;
++							remote-endpoint = <&dsboard_ornx_imx477_out3>;
++						};
++					};
++					port@1 {
++						status = "okay";
++						reg = <1>;
++						dsboard_ornx_csi_out3: endpoint@7 {
++							status = "okay";
++							remote-endpoint = <&dsboard_ornx_vi_in3>;
++						};
++					};
++				};
++			};
++		};
++	};
++
++	i2c@3180000 {
++		pca9544a@70 {
++			i2c@0 {
++				status = "okay";
++				imx477_a@1a {
++					status="okay";
++
++					compatible = "ridgerun,imx477";
++					/* I2C device address */
++					reg = <0x1a>;
++
++					/* V4L2 device node location */
++					devnode = "video0";
++
++					/* Physical dimensions of sensor */
++					physical_w = "3.680";
++					physical_h = "2.760";
++
++					sensor_model = "imx477";
++
++					use_sensor_mode_id = "true";
++
++					/**
++					* ==== Modes ====
++					* A modeX node is required to support v4l2 driver
++					* implementation with NVIDIA camera software stack
++					*
++					* == Signal properties ==
++					*
++					* phy_mode = "";
++					* PHY mode used by the MIPI lanes for this device
++					*
++					* tegra_sinterface = "";
++					* CSI Serial interface connected to tegra
++					* Incase of virtual HW devices, use virtual
++					* For SW emulated devices, use host
++					*
++					* pix_clk_hz = "";
++					* Sensor pixel clock used for calculations like exposure and framerate
++					*
++					* readout_orientation = "0";
++					* Based on camera module orientation.
++					* Only change readout_orientation if you specifically
++					* Program a different readout order for this mode
++					*
++					* == Image format Properties ==
++					*
++					* active_w = "";
++					* Pixel active region width
++					*
++					* active_h = "";
++					* Pixel active region height
++					*
++					* pixel_t = "";
++					* The sensor readout pixel pattern
++					*
++					* line_length = "";
++					* Pixel line length (width) for sensor mode.
++					*
++					* == Source Control Settings ==
++					*
++					* Gain factor used to convert fixed point integer to float
++					* Gain range [min_gain/gain_factor, max_gain/gain_factor]
++					* Gain step [step_gain/gain_factor is the smallest step that can be configured]
++					* Default gain [Default gain to be initialized for the control.
++					*     use min_gain_val as default for optimal results]
++					* Framerate factor used to convert fixed point integer to float
++					* Framerate range [min_framerate/framerate_factor, max_framerate/framerate_factor]
++					* Framerate step [step_framerate/framerate_factor is the smallest step that can be configured]
++					* Default Framerate [Default framerate to be initialized for the control.
++					*     use max_framerate to get required performance]
++					* Exposure factor used to convert fixed point integer to float
++					* For convenience use 1 sec = 1000000us as conversion factor
++					* Exposure range [min_exp_time/exposure_factor, max_exp_time/exposure_factor]
++					* Exposure step [step_exp_time/exposure_factor is the smallest step that can be configured]
++					* Default Exposure Time [Default exposure to be initialized for the control.
++					*     Set default exposure based on the default_framerate for optimal exposure settings]
++					*
++					* gain_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_gain_val = ""; (ceil to integer)
++					* max_gain_val = ""; (ceil to integer)
++					* step_gain_val = ""; (ceil to integer)
++					* default_gain = ""; (ceil to integer)
++					* Gain limits for mode
++					*
++					* exposure_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_exp_time = ""; (ceil to integer)
++					* max_exp_time = ""; (ceil to integer)
++					* step_exp_time = ""; (ceil to integer)
++					* default_exp_time = ""; (ceil to integer)
++					* Exposure Time limits for mode (sec)
++					*
++					* framerate_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_framerate = ""; (ceil to integer)
++					* max_framerate = ""; (ceil to integer)
++					* step_framerate = ""; (ceil to integer)
++					* default_framerate = ""; (ceil to integer)
++					* Framerate limits for mode (fps)
++					*
++					* embedded_metadata_height = "";
++					* Sensor embedded metadata height in units of rows.
++					* If sensor does not support embedded metadata value should be 0.
++					*/
++					mode0 { /* IMX477_MODE_3840x2160 */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_a";
++						phy_mode = "DPHY";
++						discontinuous_clk = "no";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "3840";
++						active_h = "2160";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "11200";
++						inherent_gain = "1";
++						mclk_multiplier = "80";
++						pix_clk_hz = "300000000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "356"; /* 22x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 30.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 30.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode1 { /* IMX477_MODE_1920X1080 */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_a";
++						phy_mode = "DPHY";
++						discontinuous_clk = "no";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "1920";
++						active_h = "1080";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "7000";
++						inherent_gain = "1";
++						mclk_multiplier = "80";
++						pix_clk_hz = "300000000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "356"; /* 22x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "60000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "60000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						port@0 {
++							status = "okay";
++							reg = <0>;
++							dsboard_ornx_imx477_out0: endpoint {
++								status = "okay";
++								port-index = <0>;
++								bus-width = <2>;
++								remote-endpoint = <&dsboard_ornx_csi_in0>;
++							};
++						};
++					};
++				};
++			};
++
++			i2c@1 {
++				imx477_b@1a {
++					status="okay";
++
++					compatible = "ridgerun,imx477";
++					/* I2C device address */
++					reg = <0x1a>;
++
++					/* V4L2 device node location */
++					devnode = "video1";
++
++					/* Physical dimensions of sensor */
++					physical_w = "3.680";
++					physical_h = "2.760";
++
++					sensor_model = "imx477";
++
++					use_sensor_mode_id = "true";
++
++					mode0 { /* IMX477_MODE_3840x2160 */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_b";
++						phy_mode = "DPHY";
++						discontinuous_clk = "no";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "3840";
++						active_h = "2160";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "11200";
++						inherent_gain = "1";
++						mclk_multiplier = "80";
++						pix_clk_hz = "300000000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "356"; /* 22x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 30.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 30.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode1 { /* IMX477_MODE_1920X1080 */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_b";
++						phy_mode = "DPHY";
++						discontinuous_clk = "no";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "1920";
++						active_h = "1080";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "7000";
++						inherent_gain = "1";
++						mclk_multiplier = "80";
++						pix_clk_hz = "300000000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "356"; /* 22x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "60000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "60000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						port@0 {
++							reg = <0>;
++							dsboard_ornx_imx477_out1: endpoint {
++								port-index = <1>;
++								bus-width = <2>;
++								remote-endpoint = <&dsboard_ornx_csi_in1>;
++							};
++						};
++					};
++				};
++			};
++
++			i2c@2 {
++				imx477_c@1a {
++					status="okay";
++
++					compatible = "ridgerun,imx477";
++					/* I2C device address */
++					reg = <0x1a>;
++
++					/* V4L2 device node location */
++					devnode = "video2";
++
++					/* Physical dimensions of sensor */
++					physical_w = "3.680";
++					physical_h = "2.760";
++
++					sensor_model = "imx477";
++
++					use_sensor_mode_id = "true";
++
++					mode0 { /* IMX477_MODE_3840x2160 */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_c";
++						phy_mode = "DPHY";
++						discontinuous_clk = "no";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "3840";
++						active_h = "2160";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "11200";
++						inherent_gain = "1";
++						mclk_multiplier = "80";
++						pix_clk_hz = "300000000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "356"; /* 22x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 30.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 30.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode1 { /* IMX477_MODE_1920X1080 */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_c";
++						phy_mode = "DPHY";
++						discontinuous_clk = "no";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "1920";
++						active_h = "1080";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "7000";
++						inherent_gain = "1";
++						mclk_multiplier = "80";
++						pix_clk_hz = "300000000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "356"; /* 22x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "60000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "60000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						port@0 {
++							reg = <0>;
++							dsboard_ornx_imx477_out2: endpoint {
++								port-index = <2>;
++								bus-width = <2>;
++								remote-endpoint = <&dsboard_ornx_csi_in2>;
++							};
++						};
++					};
++				};
++			};
++
++			i2c@3 {
++				imx477_d@1a {
++					status="okay";
++
++					compatible = "ridgerun,imx477";
++					/* I2C device address */
++					reg = <0x1a>;
++
++					/* V4L2 device node location */
++					devnode = "video3";
++
++					/* Physical dimensions of sensor */
++					physical_w = "3.680";
++					physical_h = "2.760";
++
++					sensor_model = "imx477";
++
++					use_sensor_mode_id = "true";
++
++					mode0 { /* IMX477_MODE_3840x2160 */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_d";
++						phy_mode = "DPHY";
++						discontinuous_clk = "no";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "3840";
++						active_h = "2160";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "11200";
++						inherent_gain = "1";
++						mclk_multiplier = "80";
++						pix_clk_hz = "300000000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "356"; /* 22x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 30.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 30.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode1 { /* IMX477_MODE_1920X1080 */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_d";
++						phy_mode = "DPHY";
++						discontinuous_clk = "no";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "1920";
++						active_h = "1080";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "7000";
++						inherent_gain = "1";
++						mclk_multiplier = "80";
++						pix_clk_hz = "300000000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "356"; /* 22x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "60000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "60000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						port@0 {
++							reg = <0>;
++							dsboard_ornx_imx477_out3: endpoint {
++								port-index = <3>;
++								bus-width = <2>;
++								remote-endpoint = <&dsboard_ornx_csi_in3>;
++							};
++						};
++					};
++				};
++			};
++		};
++	};
++};
++/ {
++	tegra-camera-platform {
++		compatible = "nvidia, tegra-camera-platform";
++		/**
++		* Physical settings to calculate max ISO BW
++		*
++		* num_csi_lanes = <>;
++		* Total number of CSI lanes when all cameras are active
++		*
++		* max_lane_speed = <>;
++		* Max lane speed in Kbit/s
++		*
++		* min_bits_per_pixel = <>;
++		* Min bits per pixel
++		*
++		* vi_peak_byte_per_pixel = <>;
++		* Max byte per pixel for the VI ISO case
++		*
++		* vi_bw_margin_pct = <>;
++		* Vi bandwidth margin in percentage
++		*
++		* max_pixel_rate = <>;
++		* Max pixel rate in Kpixel/s for the ISP ISO case
++		*
++		* isp_peak_byte_per_pixel = <>;
++		* Max byte per pixel for the ISP ISO case
++		*
++		* isp_bw_margin_pct = <>;
++		* Isp bandwidth margin in percentage
++		*/
++		num_csi_lanes = <8>;
++		max_lane_speed = <1500000>;
++		min_bits_per_pixel = <10>;
++		vi_peak_byte_per_pixel = <2>;
++		vi_bw_margin_pct = <25>;
++		max_pixel_rate = <7500000>;
++		isp_peak_byte_per_pixel = <5>;
++		isp_bw_margin_pct = <25>;
++
++		/**
++		 * The general guideline for naming badge_info contains 3 parts, and is as follows,
++		 * The first part is the camera_board_id for the module; if the module is in a FFD
++		 * platform, then use the platform name for this part.
++		 * The second part contains the position of the module, ex. "rear" or "front".
++		 * The third part contains the last 6 characters of a part number which is found
++		 * in the module's specsheet from the vendor.
++		 */
++		modules {
++			module0 {
++				status = "okay";
++				badge = "dsboard_ornx_bottomleft_P5V27C";
++				position = "bottomleft";
++				orientation = "1";
++				drivernode0 {
++					status = "okay";
++					pcl_id = "v4l2_sensor";
++					devname = "imx477 30-001a";
++					proc-device-tree = "/proc/device-tree/i2c@3180000/pca9544a@70/i2c@0/imx477_a@1a";
++				};
++			};
++			module1 {
++				status = "okay";
++				badge = "dsboard_ornx_centerleft_P5V27C";
++				position = "centerleft";
++				orientation = "1";
++				drivernode0 {
++					status = "okay";
++					pcl_id = "v4l2_sensor";
++					devname = "imx477 31-001a";
++					proc-device-tree = "/proc/device-tree/i2c@3180000/pca9544a@70/i2c@1/imx477_b@1a";
++				};
++			};
++			module2 {
++				status = "okay";
++				badge = "dsboard_ornx_centerright_P5V27C";
++				position = "centerright";
++				orientation = "1";
++				drivernode0 {
++					status = "okay";
++					pcl_id = "v4l2_sensor";
++					devname = "imx477 32-001a";
++					proc-device-tree = "/proc/device-tree/i2c@3180000/pca9544a@70/i2c@2/imx477_c@1a";
++				};
++			};
++			module3 {
++				status = "okay";
++				badge = "dsboard_ornx_topleft_P5V27C";
++				position = "topleft";
++				orientation = "1";
++				drivernode0 {
++					status = "okay";
++					pcl_id = "v4l2_sensor";
++					devname = "imx477 33-001a";
++					proc-device-tree = "/proc/device-tree/i2c@3180000/pca9544a@70/i2c@3/imx477_d@1a";
++				};
++			};
++		};
++	};
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-camera-dsboard-ornx-imx219.dtsi b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-camera-dsboard-ornx-imx219.dtsi
+new file mode 100644
+index 000000000..84e6cb0fd
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-p3768-camera-dsboard-ornx-imx219.dtsi
+@@ -0,0 +1,85 @@
++/*
++ * Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "tegra234-camera-dsboard-ornx-imx219.dtsi"
++
++#define CAM0_PWDN	TEGRA234_MAIN_GPIO(H, 6)
++#define CAM1_PWDN	TEGRA234_MAIN_GPIO(AC, 0)
++#define CAM2_PWDN	TEGRA234_AON_GPIO(CC, 1) // GPIO04
++#define CAM3_PWDN	TEGRA234_AON_GPIO(EE, 2) // GPIO10
++#define CAMERA_I2C_MUX_BUS(x) (0x1E + x)
++
++// CAM0_MCLK - Pin_116 - GPIO(P, 0)
++// CAM1_MCLK - Pin_122 - GPIO(P, 1)
++// CAM2_MCLK - GPIO02 - GPIO(Q, 5)
++// CAM3_MCLK - GPIO11 - GPIO(Q, 6)
++
++
++/ {
++	i2c@3180000 {
++		pca9544a_70: pca9544a@70 {
++			status = "okay";
++			compatible = "nxp,pca9544";
++			reg = <0x70>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			vcc-supply = <&p3768_vdd_1v8>;
++			skip_mux_detect;
++			force_bus_start = <CAMERA_I2C_MUX_BUS(0)>;
++			i2c@0 {
++				//status="disabled";
++
++				reg = <0>;
++				i2c-mux,deselect-on-exit;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				imx219_a@10 {
++					reset-gpios = <&tegra_main_gpio CAM0_PWDN GPIO_ACTIVE_HIGH>;
++				};
++			};
++			i2c@1 {
++				reg = <1>;
++				i2c-mux,deselect-on-exit;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				imx219_b@10 {
++					reset-gpios = <&tegra_main_gpio CAM1_PWDN GPIO_ACTIVE_HIGH>;
++				};
++			};
++			i2c@2 {
++				//status="disabled";
++
++				reg = <2>;
++				i2c-mux,deselect-on-exit;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				imx219_c@10 {
++					reset-gpios = <&tegra_aon_gpio CAM2_PWDN GPIO_ACTIVE_HIGH>;
++				};
++			};
++			i2c@3 {
++				reg = <3>;
++				i2c-mux,deselect-on-exit;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				imx219_d@10 {
++					reset-gpios = <&tegra_aon_gpio CAM3_PWDN GPIO_ACTIVE_HIGH>;
++				};
++			};
++		};
++	};
++};
+diff --git a/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-camera-dsboard-ornx-imx219.dtsi b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-camera-dsboard-ornx-imx219.dtsi
+new file mode 100644
+index 000000000..4eca0d4bd
+--- /dev/null
++++ b/nvidia/platform/t23x/p3768/kernel-dts/cvb/tegra234-camera-dsboard-ornx-imx219.dtsi
+@@ -0,0 +1,1600 @@
++/*
++ * Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++#include <dt-bindings/media/camera.h>
++
++/ {
++	tegra-capture-vi  {
++		num-channels = <4>;
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			port@0 {
++				status = "okay";
++				reg = <0>;
++				dsboard_ornx_vi_in0: endpoint {
++					status = "okay";
++					port-index = <0>;
++					bus-width = <2>;
++					remote-endpoint = <&dsboard_ornx_csi_out0>;
++				};
++			};
++			port@1 {
++				status = "okay";
++				reg = <1>;
++				dsboard_ornx_vi_in1: endpoint {
++					status = "okay";
++					port-index = <1>;
++					bus-width = <2>;
++					remote-endpoint = <&dsboard_ornx_csi_out1>;
++				};
++			};
++			port@2 {
++				status = "okay";
++				reg = <2>;
++				dsboard_ornx_vi_in2: endpoint {
++					status = "okay";
++					port-index = <2>;
++					bus-width = <2>;
++					remote-endpoint = <&dsboard_ornx_csi_out2>;
++				};
++			};
++			port@3 {
++				status = "okay";
++				reg = <3>;
++				dsboard_ornx_vi_in3: endpoint {
++					status = "okay";
++					port-index = <3>;
++					bus-width = <2>;
++					remote-endpoint = <&dsboard_ornx_csi_out3>;
++				};
++			};
++		};
++	};
++
++	host1x@13e00000 {
++		nvcsi@15a00000 {
++			num-channels = <4>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "okay";
++			channel@0 {
++				status = "okay";
++				reg = <0>;
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					port@0 {
++						status = "okay";
++						reg = <0>;
++						dsboard_ornx_csi_in0: endpoint@0 {
++							status = "okay";
++							port-index = <0>;
++							bus-width = <2>;
++							remote-endpoint = <&dsboard_ornx_imx219_out0>;
++						};
++					};
++					port@1 {
++						status = "okay";
++						reg = <1>;
++						dsboard_ornx_csi_out0: endpoint@1 {
++							status = "okay";
++							remote-endpoint = <&dsboard_ornx_vi_in0>;
++						};
++					};
++				};
++			};
++			channel@1 {
++				status = "okay";
++				reg = <1>;
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					port@0 {
++						status = "okay";
++						reg = <0>;
++						dsboard_ornx_csi_in1: endpoint@2 {
++							status = "okay";
++							port-index = <1>;
++							bus-width = <2>;
++							remote-endpoint = <&dsboard_ornx_imx219_out1>;
++						};
++					};
++					port@1 {
++						status = "okay";
++						reg = <1>;
++						dsboard_ornx_csi_out1: endpoint@3 {
++							status = "okay";
++							remote-endpoint = <&dsboard_ornx_vi_in1>;
++						};
++					};
++				};
++			};
++			channel@2 {
++				status = "okay";
++				reg = <2>;
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					port@0 {
++						status = "okay";
++						reg = <0>;
++						dsboard_ornx_csi_in2: endpoint@4 {
++							status = "okay";
++							port-index = <2>;
++							bus-width = <2>;
++							remote-endpoint = <&dsboard_ornx_imx219_out2>;
++						};
++					};
++					port@1 {
++						status = "okay";
++						reg = <1>;
++						dsboard_ornx_csi_out2: endpoint@5 {
++							status = "okay";
++							remote-endpoint = <&dsboard_ornx_vi_in2>;
++						};
++					};
++				};
++			};
++			channel@3 {
++				status = "okay";
++				reg = <3>;
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					port@0 {
++						status = "okay";
++						reg = <0>;
++						dsboard_ornx_csi_in3: endpoint@6 {
++							status = "okay";
++							port-index = <3>;
++							bus-width = <2>;
++							remote-endpoint = <&dsboard_ornx_imx219_out3>;
++						};
++					};
++					port@1 {
++						status = "okay";
++						reg = <1>;
++						dsboard_ornx_csi_out3: endpoint@7 {
++							status = "okay";
++							remote-endpoint = <&dsboard_ornx_vi_in3>;
++						};
++					};
++				};
++			};
++		};
++	};
++
++	i2c@3180000 {
++		pca9544a@70 {
++			i2c@0 {
++				status = "okay";
++				imx219_a@10 {
++					status="okay";
++
++					compatible = "sony,imx219";
++					/* I2C device address */
++					reg = <0x10>;
++
++					/* V4L2 device node location */
++					devnode = "video0";
++
++					/* Physical dimensions of sensor */
++					physical_w = "3.680";
++					physical_h = "2.760";
++
++					sensor_model = "imx219";
++
++					use_sensor_mode_id = "true";
++
++					/**
++					* ==== Modes ====
++					* A modeX node is required to support v4l2 driver
++					* implementation with NVIDIA camera software stack
++					*
++					* == Signal properties ==
++					*
++					* phy_mode = "";
++					* PHY mode used by the MIPI lanes for this device
++					*
++					* tegra_sinterface = "";
++					* CSI Serial interface connected to tegra
++					* Incase of virtual HW devices, use virtual
++					* For SW emulated devices, use host
++					*
++					* pix_clk_hz = "";
++					* Sensor pixel clock used for calculations like exposure and framerate
++					*
++					* readout_orientation = "0";
++					* Based on camera module orientation.
++					* Only change readout_orientation if you specifically
++					* Program a different readout order for this mode
++					*
++					* == Image format Properties ==
++					*
++					* active_w = "";
++					* Pixel active region width
++					*
++					* active_h = "";
++					* Pixel active region height
++					*
++					* pixel_t = "";
++					* The sensor readout pixel pattern
++					*
++					* line_length = "";
++					* Pixel line length (width) for sensor mode.
++					*
++					* == Source Control Settings ==
++					*
++					* Gain factor used to convert fixed point integer to float
++					* Gain range [min_gain/gain_factor, max_gain/gain_factor]
++					* Gain step [step_gain/gain_factor is the smallest step that can be configured]
++					* Default gain [Default gain to be initialized for the control.
++					*     use min_gain_val as default for optimal results]
++					* Framerate factor used to convert fixed point integer to float
++					* Framerate range [min_framerate/framerate_factor, max_framerate/framerate_factor]
++					* Framerate step [step_framerate/framerate_factor is the smallest step that can be configured]
++					* Default Framerate [Default framerate to be initialized for the control.
++					*     use max_framerate to get required performance]
++					* Exposure factor used to convert fixed point integer to float
++					* For convenience use 1 sec = 1000000us as conversion factor
++					* Exposure range [min_exp_time/exposure_factor, max_exp_time/exposure_factor]
++					* Exposure step [step_exp_time/exposure_factor is the smallest step that can be configured]
++					* Default Exposure Time [Default exposure to be initialized for the control.
++					*     Set default exposure based on the default_framerate for optimal exposure settings]
++					*
++					* gain_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_gain_val = ""; (ceil to integer)
++					* max_gain_val = ""; (ceil to integer)
++					* step_gain_val = ""; (ceil to integer)
++					* default_gain = ""; (ceil to integer)
++					* Gain limits for mode
++					*
++					* exposure_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_exp_time = ""; (ceil to integer)
++					* max_exp_time = ""; (ceil to integer)
++					* step_exp_time = ""; (ceil to integer)
++					* default_exp_time = ""; (ceil to integer)
++					* Exposure Time limits for mode (sec)
++					*
++					* framerate_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_framerate = ""; (ceil to integer)
++					* max_framerate = ""; (ceil to integer)
++					* step_framerate = ""; (ceil to integer)
++					* default_framerate = ""; (ceil to integer)
++					* Framerate limits for mode (fps)
++					*
++					* embedded_metadata_height = "";
++					* Sensor embedded metadata height in units of rows.
++					* If sensor does not support embedded metadata value should be 0.
++					*/
++					mode0 { /* IMX219_MODE_3280x2464_21FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_a";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "3280";
++						active_h = "2464";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "21000000"; /* 21.0 fps */
++						step_framerate = "1";
++						default_framerate = "21000000"; /* 21.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode1 { /* IMX219_MODE_3280x1848_28FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_a";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "3280";
++						active_h = "1848";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "28000000"; /* 28.0 fps */
++						step_framerate = "1";
++						default_framerate = "28000000"; /* 28.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode2 { /* IMX219_MODE_1920x1080_30FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_a";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "1920";
++						active_h = "1080";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 30.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 30.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					mode3 { /* IMX219_MODE_1640x1232_30FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_a";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "1640";
++						active_h = "1232";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					mode4 { /* IMX219_MODE_1280x720_60FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_a";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "1280";
++						active_h = "720";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "60000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "60000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						port@0 {
++							status = "okay";
++							reg = <0>;
++							dsboard_ornx_imx219_out0: endpoint {
++								status = "okay";
++								port-index = <0>;
++								bus-width = <2>;
++								remote-endpoint = <&dsboard_ornx_csi_in0>;
++							};
++						};
++					};
++				};
++			};
++
++			i2c@1 {
++				imx219_b@10 {
++					status="okay";
++
++					compatible = "sony,imx219";
++					/* I2C device address */
++					reg = <0x10>;
++
++					/* V4L2 device node location */
++					devnode = "video1";
++
++					/* Physical dimensions of sensor */
++					physical_w = "3.680";
++					physical_h = "2.760";
++
++					sensor_model = "imx219";
++
++					use_sensor_mode_id = "true";
++
++					/**
++					* ==== Modes ====
++					* A modeX node is required to support v4l2 driver
++					* implementation with NVIDIA camera software stack
++					*
++					* == Signal properties ==
++					*
++					* phy_mode = "";
++					* PHY mode used by the MIPI lanes for this device
++					*
++					* tegra_sinterface = "";
++					* CSI Serial interface connected to tegra
++					* Incase of virtual HW devices, use virtual
++					* For SW emulated devices, use host
++					*
++					* pix_clk_hz = "";
++					* Sensor pixel clock used for calculations like exposure and framerate
++					*
++					* readout_orientation = "0";
++					* Based on camera module orientation.
++					* Only change readout_orientation if you specifically
++					* Program a different readout order for this mode
++					*
++					* == Image format Properties ==
++					*
++					* active_w = "";
++					* Pixel active region width
++					*
++					* active_h = "";
++					* Pixel active region height
++					*
++					* pixel_t = "";
++					* The sensor readout pixel pattern
++					*
++					* line_length = "";
++					* Pixel line length (width) for sensor mode.
++					*
++					* == Source Control Settings ==
++					*
++					* Gain factor used to convert fixed point integer to float
++					* Gain range [min_gain/gain_factor, max_gain/gain_factor]
++					* Gain step [step_gain/gain_factor is the smallest step that can be configured]
++					* Default gain [Default gain to be initialized for the control.
++					*     use min_gain_val as default for optimal results]
++					* Framerate factor used to convert fixed point integer to float
++					* Framerate range [min_framerate/framerate_factor, max_framerate/framerate_factor]
++					* Framerate step [step_framerate/framerate_factor is the smallest step that can be configured]
++					* Default Framerate [Default framerate to be initialized for the control.
++					*     use max_framerate to get required performance]
++					* Exposure factor used to convert fixed point integer to float
++					* For convenience use 1 sec = 1000000us as conversion factor
++					* Exposure range [min_exp_time/exposure_factor, max_exp_time/exposure_factor]
++					* Exposure step [step_exp_time/exposure_factor is the smallest step that can be configured]
++					* Default Exposure Time [Default exposure to be initialized for the control.
++					*     Set default exposure based on the default_framerate for optimal exposure settings]
++					*
++					* gain_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_gain_val = ""; (ceil to integer)
++					* max_gain_val = ""; (ceil to integer)
++					* step_gain_val = ""; (ceil to integer)
++					* default_gain = ""; (ceil to integer)
++					* Gain limits for mode
++					*
++					* exposure_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_exp_time = ""; (ceil to integer)
++					* max_exp_time = ""; (ceil to integer)
++					* step_exp_time = ""; (ceil to integer)
++					* default_exp_time = ""; (ceil to integer)
++					* Exposure Time limits for mode (sec)
++					*
++					* framerate_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_framerate = ""; (ceil to integer)
++					* max_framerate = ""; (ceil to integer)
++					* step_framerate = ""; (ceil to integer)
++					* default_framerate = ""; (ceil to integer)
++					* Framerate limits for mode (fps)
++					*
++					* embedded_metadata_height = "";
++					* Sensor embedded metadata height in units of rows.
++					* If sensor does not support embedded metadata value should be 0.
++					*/
++					mode0 { /* IMX219_MODE_3280x2464_21FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_b";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "3280";
++						active_h = "2464";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "21000000"; /* 21.0 fps */
++						step_framerate = "1";
++						default_framerate = "21000000"; /* 21.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode1 { /* IMX219_MODE_3280x1848_28FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_b";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "3280";
++						active_h = "1848";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "28000000"; /* 28.0 fps */
++						step_framerate = "1";
++						default_framerate = "28000000"; /* 28.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode2 { /* IMX219_MODE_1920x1080_30FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_b";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "1920";
++						active_h = "1080";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 30.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 30.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					mode3 { /* IMX219_MODE_1640x1232_30FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_b";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "1640";
++						active_h = "1232";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					mode4 { /* IMX219_MODE_1280x720_60FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_b";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++						lane_polarity = "6";
++
++						active_w = "1280";
++						active_h = "720";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "60000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "60000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						port@0 {
++							reg = <0>;
++							dsboard_ornx_imx219_out1: endpoint {
++								port-index = <1>;
++								bus-width = <2>;
++								remote-endpoint = <&dsboard_ornx_csi_in1>;
++							};
++						};
++					};
++				};
++			};
++
++			i2c@2 {
++				imx219_c@10 {
++					status="okay";
++
++					compatible = "sony,imx219";
++					/* I2C device address */
++					reg = <0x10>;
++
++					/* V4L2 device node location */
++					devnode = "video2";
++
++					/* Physical dimensions of sensor */
++					physical_w = "3.680";
++					physical_h = "2.760";
++
++					sensor_model = "imx219";
++
++					use_sensor_mode_id = "true";
++
++					/**
++					* ==== Modes ====
++					* A modeX node is required to support v4l2 driver
++					* implementation with NVIDIA camera software stack
++					*
++					* == Signal properties ==
++					*
++					* phy_mode = "";
++					* PHY mode used by the MIPI lanes for this device
++					*
++					* tegra_sinterface = "";
++					* CSI Serial interface connected to tegra
++					* Incase of virtual HW devices, use virtual
++					* For SW emulated devices, use host
++					*
++					* pix_clk_hz = "";
++					* Sensor pixel clock used for calculations like exposure and framerate
++					*
++					* readout_orientation = "0";
++					* Based on camera module orientation.
++					* Only change readout_orientation if you specifically
++					* Program a different readout order for this mode
++					*
++					* == Image format Properties ==
++					*
++					* active_w = "";
++					* Pixel active region width
++					*
++					* active_h = "";
++					* Pixel active region height
++					*
++					* pixel_t = "";
++					* The sensor readout pixel pattern
++					*
++					* line_length = "";
++					* Pixel line length (width) for sensor mode.
++					*
++					* == Source Control Settings ==
++					*
++					* Gain factor used to convert fixed point integer to float
++					* Gain range [min_gain/gain_factor, max_gain/gain_factor]
++					* Gain step [step_gain/gain_factor is the smallest step that can be configured]
++					* Default gain [Default gain to be initialized for the control.
++					*     use min_gain_val as default for optimal results]
++					* Framerate factor used to convert fixed point integer to float
++					* Framerate range [min_framerate/framerate_factor, max_framerate/framerate_factor]
++					* Framerate step [step_framerate/framerate_factor is the smallest step that can be configured]
++					* Default Framerate [Default framerate to be initialized for the control.
++					*     use max_framerate to get required performance]
++					* Exposure factor used to convert fixed point integer to float
++					* For convenience use 1 sec = 1000000us as conversion factor
++					* Exposure range [min_exp_time/exposure_factor, max_exp_time/exposure_factor]
++					* Exposure step [step_exp_time/exposure_factor is the smallest step that can be configured]
++					* Default Exposure Time [Default exposure to be initialized for the control.
++					*     Set default exposure based on the default_framerate for optimal exposure settings]
++					*
++					* gain_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_gain_val = ""; (ceil to integer)
++					* max_gain_val = ""; (ceil to integer)
++					* step_gain_val = ""; (ceil to integer)
++					* default_gain = ""; (ceil to integer)
++					* Gain limits for mode
++					*
++					* exposure_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_exp_time = ""; (ceil to integer)
++					* max_exp_time = ""; (ceil to integer)
++					* step_exp_time = ""; (ceil to integer)
++					* default_exp_time = ""; (ceil to integer)
++					* Exposure Time limits for mode (sec)
++					*
++					* framerate_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_framerate = ""; (ceil to integer)
++					* max_framerate = ""; (ceil to integer)
++					* step_framerate = ""; (ceil to integer)
++					* default_framerate = ""; (ceil to integer)
++					* Framerate limits for mode (fps)
++					*
++					* embedded_metadata_height = "";
++					* Sensor embedded metadata height in units of rows.
++					* If sensor does not support embedded metadata value should be 0.
++					*/
++					mode0 { /* IMX219_MODE_3280x2464_21FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_c";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "3280";
++						active_h = "2464";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "21000000"; /* 21.0 fps */
++						step_framerate = "1";
++						default_framerate = "21000000"; /* 21.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode1 { /* IMX219_MODE_3280x1848_28FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_c";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "3280";
++						active_h = "1848";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "28000000"; /* 28.0 fps */
++						step_framerate = "1";
++						default_framerate = "28000000"; /* 28.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode2 { /* IMX219_MODE_1920x1080_30FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_c";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "1920";
++						active_h = "1080";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 30.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 30.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					mode3 { /* IMX219_MODE_1640x1232_30FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_c";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "1640";
++						active_h = "1232";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					mode4 { /* IMX219_MODE_1280x720_60FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_c";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "1280";
++						active_h = "720";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "60000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "60000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						port@0 {
++							reg = <0>;
++							dsboard_ornx_imx219_out2: endpoint {
++								port-index = <2>;
++								bus-width = <2>;
++								remote-endpoint = <&dsboard_ornx_csi_in2>;
++							};
++						};
++					};
++				};
++			};
++
++			i2c@3 {
++				imx219_d@10 {
++					status="okay";
++
++					compatible = "sony,imx219";
++					/* I2C device address */
++					reg = <0x10>;
++
++					/* V4L2 device node location */
++					devnode = "video3";
++
++					/* Physical dimensions of sensor */
++					physical_w = "3.680";
++					physical_h = "2.760";
++
++					sensor_model = "imx219";
++
++					use_sensor_mode_id = "true";
++
++					/**
++					* ==== Modes ====
++					* A modeX node is required to support v4l2 driver
++					* implementation with NVIDIA camera software stack
++					*
++					* == Signal properties ==
++					*
++					* phy_mode = "";
++					* PHY mode used by the MIPI lanes for this device
++					*
++					* tegra_sinterface = "";
++					* CSI Serial interface connected to tegra
++					* Incase of virtual HW devices, use virtual
++					* For SW emulated devices, use host
++					*
++					* pix_clk_hz = "";
++					* Sensor pixel clock used for calculations like exposure and framerate
++					*
++					* readout_orientation = "0";
++					* Based on camera module orientation.
++					* Only change readout_orientation if you specifically
++					* Program a different readout order for this mode
++					*
++					* == Image format Properties ==
++					*
++					* active_w = "";
++					* Pixel active region width
++					*
++					* active_h = "";
++					* Pixel active region height
++					*
++					* pixel_t = "";
++					* The sensor readout pixel pattern
++					*
++					* line_length = "";
++					* Pixel line length (width) for sensor mode.
++					*
++					* == Source Control Settings ==
++					*
++					* Gain factor used to convert fixed point integer to float
++					* Gain range [min_gain/gain_factor, max_gain/gain_factor]
++					* Gain step [step_gain/gain_factor is the smallest step that can be configured]
++					* Default gain [Default gain to be initialized for the control.
++					*     use min_gain_val as default for optimal results]
++					* Framerate factor used to convert fixed point integer to float
++					* Framerate range [min_framerate/framerate_factor, max_framerate/framerate_factor]
++					* Framerate step [step_framerate/framerate_factor is the smallest step that can be configured]
++					* Default Framerate [Default framerate to be initialized for the control.
++					*     use max_framerate to get required performance]
++					* Exposure factor used to convert fixed point integer to float
++					* For convenience use 1 sec = 1000000us as conversion factor
++					* Exposure range [min_exp_time/exposure_factor, max_exp_time/exposure_factor]
++					* Exposure step [step_exp_time/exposure_factor is the smallest step that can be configured]
++					* Default Exposure Time [Default exposure to be initialized for the control.
++					*     Set default exposure based on the default_framerate for optimal exposure settings]
++					*
++					* gain_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_gain_val = ""; (ceil to integer)
++					* max_gain_val = ""; (ceil to integer)
++					* step_gain_val = ""; (ceil to integer)
++					* default_gain = ""; (ceil to integer)
++					* Gain limits for mode
++					*
++					* exposure_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_exp_time = ""; (ceil to integer)
++					* max_exp_time = ""; (ceil to integer)
++					* step_exp_time = ""; (ceil to integer)
++					* default_exp_time = ""; (ceil to integer)
++					* Exposure Time limits for mode (sec)
++					*
++					* framerate_factor = ""; (integer factor used for floating to fixed point conversion)
++					* min_framerate = ""; (ceil to integer)
++					* max_framerate = ""; (ceil to integer)
++					* step_framerate = ""; (ceil to integer)
++					* default_framerate = ""; (ceil to integer)
++					* Framerate limits for mode (fps)
++					*
++					* embedded_metadata_height = "";
++					* Sensor embedded metadata height in units of rows.
++					* If sensor does not support embedded metadata value should be 0.
++					*/
++					mode0 { /* IMX219_MODE_3280x2464_21FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_d";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "3280";
++						active_h = "2464";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "21000000"; /* 21.0 fps */
++						step_framerate = "1";
++						default_framerate = "21000000"; /* 21.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode1 { /* IMX219_MODE_3280x1848_28FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_d";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "3280";
++						active_h = "1848";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "28000000"; /* 28.0 fps */
++						step_framerate = "1";
++						default_framerate = "28000000"; /* 28.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++					mode2 { /* IMX219_MODE_1920x1080_30FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_d";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "1920";
++						active_h = "1080";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 30.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 30.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					mode3 { /* IMX219_MODE_1640x1232_30FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_d";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "1640";
++						active_h = "1232";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "30000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "30000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					mode4 { /* IMX219_MODE_1280x720_60FPS */
++						mclk_khz = "24000";
++						num_lanes = "2";
++						tegra_sinterface = "serial_d";
++						phy_mode = "DPHY";
++						discontinuous_clk = "yes";
++						dpcm_enable = "false";
++						cil_settletime = "0";
++
++						active_w = "1280";
++						active_h = "720";
++						mode_type = "bayer";
++						pixel_phase = "rggb";
++						csi_pixel_bit_depth = "10";
++						readout_orientation = "90";
++						line_length = "3448";
++						inherent_gain = "1";
++						mclk_multiplier = "9.33";
++						pix_clk_hz = "182400000";
++
++						gain_factor = "16";
++						framerate_factor = "1000000";
++						exposure_factor = "1000000";
++						min_gain_val = "16"; /* 1.00x */
++						max_gain_val = "170"; /* 10.66x */
++						step_gain_val = "1";
++						default_gain = "16"; /* 1.00x */
++						min_hdr_ratio = "1";
++						max_hdr_ratio = "1";
++						min_framerate = "2000000"; /* 2.0 fps */
++						max_framerate = "60000000"; /* 60.0 fps */
++						step_framerate = "1";
++						default_framerate = "60000000"; /* 60.0 fps */
++						min_exp_time = "13"; /* us */
++						max_exp_time = "683709"; /* us */
++						step_exp_time = "1";
++						default_exp_time = "2495"; /* us */
++
++						embedded_metadata_height = "2";
++					};
++
++					ports {
++						#address-cells = <1>;
++						#size-cells = <0>;
++
++						port@0 {
++							reg = <0>;
++							dsboard_ornx_imx219_out3: endpoint {
++								port-index = <3>;
++								bus-width = <2>;
++								remote-endpoint = <&dsboard_ornx_csi_in3>;
++							};
++						};
++					};
++				};
++			};
++		};
++	};
++
++	dsboard_ornx_lens_imx219@P5V27C {
++		min_focus_distance = "0.0";
++		hyper_focal = "0.0";
++		focal_length = "3.04";
++		f_number = "2.0";
++		aperture = "0.0";
++	};
++};
++/ {
++	tegra-camera-platform {
++		compatible = "nvidia, tegra-camera-platform";
++		/**
++		* Physical settings to calculate max ISO BW
++		*
++		* num_csi_lanes = <>;
++		* Total number of CSI lanes when all cameras are active
++		*
++		* max_lane_speed = <>;
++		* Max lane speed in Kbit/s
++		*
++		* min_bits_per_pixel = <>;
++		* Min bits per pixel
++		*
++		* vi_peak_byte_per_pixel = <>;
++		* Max byte per pixel for the VI ISO case
++		*
++		* vi_bw_margin_pct = <>;
++		* Vi bandwidth margin in percentage
++		*
++		* max_pixel_rate = <>;
++		* Max pixel rate in Kpixel/s for the ISP ISO case
++		*
++		* isp_peak_byte_per_pixel = <>;
++		* Max byte per pixel for the ISP ISO case
++		*
++		* isp_bw_margin_pct = <>;
++		* Isp bandwidth margin in percentage
++		*/
++		num_csi_lanes = <8>;
++		max_lane_speed = <1500000>;
++		min_bits_per_pixel = <10>;
++		vi_peak_byte_per_pixel = <2>;
++		vi_bw_margin_pct = <25>;
++		max_pixel_rate = <240000>;
++		isp_peak_byte_per_pixel = <5>;
++		isp_bw_margin_pct = <25>;
++
++		/**
++		 * The general guideline for naming badge_info contains 3 parts, and is as follows,
++		 * The first part is the camera_board_id for the module; if the module is in a FFD
++		 * platform, then use the platform name for this part.
++		 * The second part contains the position of the module, ex. "rear" or "front".
++		 * The third part contains the last 6 characters of a part number which is found
++		 * in the module's specsheet from the vendor.
++		 */
++		modules {
++			module0 {
++				status = "okay";
++				badge = "dsboard_ornx_bottomleft_P5V27C";
++				position = "bottomleft";
++				orientation = "1";
++				drivernode0 {
++					status = "okay";
++					pcl_id = "v4l2_sensor";
++					devname = "imx219 30-0010";
++					proc-device-tree = "/proc/device-tree/i2c@3180000/pca9544a@70/i2c@0/imx219_a@10";
++				};
++				drivernode1 {
++					status = "okay";
++					pcl_id = "v4l2_lens";
++					proc-device-tree = "/proc/device-tree/dsboard_ornx_lens_imx219@P5V27C/";
++				};
++			};
++			module1 {
++				status = "okay";
++				badge = "dsboard_ornx_centerleft_P5V27C";
++				position = "centerleft";
++				orientation = "1";
++				drivernode0 {
++					status = "okay";
++					pcl_id = "v4l2_sensor";
++					devname = "imx219 31-0010";
++					proc-device-tree = "/proc/device-tree/i2c@3180000/pca9544a@70/i2c@1/imx219_b@10";
++				};
++				drivernode1 {
++					status = "okay";
++					pcl_id = "v4l2_lens";
++					proc-device-tree = "/proc/device-tree/dsboard_ornx_lens_imx219@P5V27C/";
++				};
++			};
++			module2 {
++				status = "okay";
++				badge = "dsboard_ornx_centerright_P5V27C";
++				position = "centerright";
++				orientation = "1";
++				drivernode0 {
++					status = "okay";
++					pcl_id = "v4l2_sensor";
++					devname = "imx219 32-0010";
++					proc-device-tree = "/proc/device-tree/i2c@3180000/pca9544a@70/i2c@2/imx219_c@10";
++				};
++				drivernode1 {
++					status = "okay";
++					pcl_id = "v4l2_lens";
++					proc-device-tree = "/proc/device-tree/dsboard_ornx_lens_imx219@P5V27C/";
++				};
++			};
++			module3 {
++				status = "okay";
++				badge = "dsboard_ornx_topleft_P5V27C";
++				position = "topleft";
++				orientation = "1";
++				drivernode0 {
++					status = "okay";
++					pcl_id = "v4l2_sensor";
++					devname = "imx219 33-0010";
++					proc-device-tree = "/proc/device-tree/i2c@3180000/pca9544a@70/i2c@3/imx219_d@10";
++				};
++				drivernode1 {
++					status = "okay";
++					pcl_id = "v4l2_lens";
++					proc-device-tree = "/proc/device-tree/dsboard_ornx_lens_imx219@P5V27C/";
++				};
++			};
++		};
++	};
++};

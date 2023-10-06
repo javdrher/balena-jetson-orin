@@ -8,6 +8,9 @@ SCMVERSION="n"
 SRC_URI:append = " file://0001-fix-kernel-headers-test.patch \
 		file://0001-defconfig-Fix-build-failure.patch \
 "
+
+SRC_URI:append:jetson-orin-nx-xavier-nx-devkit = " 0001-Port-Forecr-DSBOARD-ORNXLAN-patches.patch "
+
 BALENA_CONFIGS:remove = " mdraid"
 
 BALENA_CONFIGS:append = " debug_kmemleak "
@@ -77,6 +80,8 @@ BALENA_CONFIGS:append:jetson-agx-orin-devkit = " rtc"
 BALENA_CONFIGS[rtc] = " \
     CONFIG_RTC_HCTOSYS_DEVICE="rtc0" \
 "
+
+BALENA_CONFIGS:append:jetson-orin-nx-xavier-nx-devkit = " pcf8574 lan743x xr17v35x usbserial"
 
 L4TVER=" l4tver=${L4T_VERSION}"
 

@@ -27,6 +27,10 @@ do_install:jetson-orin-nx-xavier-nx-devkit() {
 
 FILES:${PN}:jetson-orin-nx-xavier-nx-devkit += " \
 	/boot/tegra234-p3767-0000-p3509-a02.dtb \
+	/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base-imx477.dtb \
+	/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-base.dtb \
+	/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan-imx477.dtb \
+	/boot/tegra234-p3767-0000-p3768-0000-a0-dsboard-ornxlan.dtb \
 "
 
 do_install:jetson-orin-nano-devkit-nvme() {
